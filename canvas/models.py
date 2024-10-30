@@ -223,7 +223,7 @@ class VCF(models.Model):
 
 
 class BedGraph(models.Model):
-    bedgraph_types = [("LRR", "Log R Ratio"), ("BAF", "B Allele Frequency")]
+    bedgraph_types = [("LRR", "Log R Ratio"), ("BAF", "B Allele Frequency"), ("CNV_pos", "CNV positive"), ("CNV_neg", "CNV negative"), ("CNV_smooth", "CNV smooth")]
     chipsample = models.ForeignKey(
         ChipSample,
         on_delete=models.PROTECT,
@@ -288,13 +288,7 @@ class Classification(models.Model):
 
 
 class Report(models.Model):
-    chipsample = models.ForeignKey(
-        ChipSample,
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="report",
-    )
+
     classifications = models.ManyToManyField(Classification)
     entry_date = models.DateTimeField(
         auto_now_add=True

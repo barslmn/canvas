@@ -293,11 +293,21 @@ def chipsample_tab_content(request):
     bedgraphs = chipsample.bedgraph.all()
     lrr_bedgraph = None
     baf_bedgraph = None
+    cnv_pos_bedgraph = None
+    cnv_neg_bedgraph = None
+    cnv_smooth_bedgraph = None
+
     for bedgraph in bedgraphs:
         if bedgraph.bedgraph_type == "LRR":
             lrr_bedgraph = bedgraph
         elif bedgraph.bedgraph_type == "BAF":
             baf_bedgraph = bedgraph
+        elif bedgraph.bedgraph_type == "CNV_pos":
+            cnv_pos_bedgraph = bedgraph
+        elif bedgraph.bedgraph_type == "CNV_neg":
+            cnv_neg_bedgraph = bedgraph
+        elif bedgraph.bedgraph_type == "CNV_smooth":
+            cnv_smooth_bedgraph = bedgraph    
 
     return render(
         request,
@@ -306,6 +316,10 @@ def chipsample_tab_content(request):
             "chipsample": chipsample,
             "lrr_bedgraph": lrr_bedgraph,
             "baf_bedgraph": baf_bedgraph,
+            "cnv_pos_bedgraph": cnv_pos_bedgraph,
+            "cnv_neg_bedgraph": cnv_neg_bedgraph,
+            "cnv_smooth_bedgraph": cnv_smooth_bedgraph,
+            ""
             "cnvs": json.dumps(cnvs),
         },
     )
