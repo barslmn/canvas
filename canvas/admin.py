@@ -14,6 +14,8 @@ from .models import (
     VCF,
     BedGraph,
     CNV,
+    Classification,
+    Report,
 )
 
 
@@ -116,7 +118,7 @@ class BedGraphAdmin(admin.ModelAdmin):
 
 
 class CNVAdmin(admin.ModelAdmin):
-    list_display = ["variant_id", "entry_date"]
+    list_display = ["variant_id", "entry_date", "protocol_id"]
     search_fields = ["variant_id", "cnv_json"]
 
     autocomplete_fields = ["chipsample"]
@@ -126,6 +128,15 @@ class CNVAdmin(admin.ModelAdmin):
             return obj.chipsample.sample.protocol_id
         except:
             return "abc"
+
+
+class ClassificationAdmin(admin.ModelAdmin):
+    list_display = ["cnv", "entry_date", "user"]
+
+
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ["entry_date", "report"]
+    autocomplete_fields = ["chipsample"]
 
 
 admin.site.register(Lot)
@@ -140,3 +151,5 @@ admin.site.register(GTC, GTCAdmin)
 admin.site.register(VCF, VCFAdmin)
 admin.site.register(BedGraph, BedGraphAdmin)
 admin.site.register(CNV, CNVAdmin)
+admin.site.register(Classification, ClassificationAdmin)
+admin.site.register(Report, ReportAdmin)
