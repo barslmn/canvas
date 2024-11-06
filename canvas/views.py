@@ -59,10 +59,10 @@ def start_run(chip_id):
                 ss.write(
                     f"{cs.position}\t{cs.sample.protocol_id}\t{cs.sample.institution.name}\n"
                 )
-            subprocess.run(
-                f"scp {ss.name} canvas@{HOST_IP}:/tmp/",
-                shell=True,
-            )
+        subprocess.run(
+            f"scp {ss.name} canvas@{HOST_IP}:/tmp/",
+            shell=True,
+        )
 
         with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as fp:
             fp.write(
@@ -79,11 +79,10 @@ profiles {{
   }}
 }}"""
             )
-            fp.close()
-            subprocess.run(
-                f"scp {fp.name} canvas@{HOST_IP}:/tmp/",
-                shell=True,
-            )
+        subprocess.run(
+            f"scp {fp.name} canvas@{HOST_IP}:/tmp/",
+            shell=True,
+        )
 
         subprocess.run(
             f"ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
