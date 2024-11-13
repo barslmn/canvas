@@ -223,7 +223,7 @@ class VCF(models.Model):
 
 
 class BedGraph(models.Model):
-    bedgraph_types = [("LRR", "Log R Ratio"), ("BAF", "B Allele Frequency"), ("CNV_pos", "CNV positive"), ("CNV_neg", "CNV negative"), ("CNV_smooth", "CNV smooth")]
+    bedgraph_types = [("LRR", "Log R Ratio"), ("BAF", "B Allele Frequency"), ("CNV_pos", "CNV positive"), ("CNV_neg", "CNV negative"), ("LRR_smooth", "LRR smooth")]
     chipsample = models.ForeignKey(
         ChipSample,
         on_delete=models.PROTECT,
