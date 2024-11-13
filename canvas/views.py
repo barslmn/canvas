@@ -26,7 +26,7 @@ from canvas.models import (
     SampleType,
 )
 
-from canvas.read_sample_from_excel import generate_data_list
+from canvas.read_tsv import read_sample_from_tsv
 
 
 def get_default_gateway_linux():
@@ -548,7 +548,10 @@ def idat_upload(request):
 
 def upload_excel(request):
     excel_file = request.FILES.get("excel_file")
-    sample_list = generate_data_list(excel_file)
+    file_path = '/tmp/uploaded_file.tsv'
+    with open(file_path, 'wb+') as destination:
+        for chunk in excel_file.chunks():
+            destination.write(chunk)
+    sample_list = read_sample_from_tsv(file_path)
     context = {"sample_list": sample_list}
-    print(context)
     return render(request, "canvas/partials/samples_from_excel.html", context)
