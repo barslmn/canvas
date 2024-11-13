@@ -13,6 +13,6 @@
     </div>
     <hr />
     {% for entry in sample_list %}
-        {% include 'canvas/partials/sample_input_row.html' with institute=entry.inst protocol_id=entry.prot_id arrival_date=entry.arrival_date %}
+        {% include 'canvas/partials/sample_input_row.html' with institute=entry.inst protocol_id=entry.prot_id arrival_date=entry.arrival_date sex=entry.sex %}
     {% endfor %}
 </div>
