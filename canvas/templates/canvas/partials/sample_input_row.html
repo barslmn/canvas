@@ -29,8 +29,8 @@
   <input autocomplete="off" type="text" name="description" />
   <select name="sex" aria-label="Enter observed sex" required>
     <option selected disabled value="">Enter observed sex…</option>
-    <option value="M">Male</option>
-    <option value="F">Female</option>
+    <option value="M" {% if sex == 'Erkek'%} selected {% endif %}>Male</option>
+    <option value="F" {% if sex == 'Kadın'%} selected {% endif %}>Female</option>
     <option value="U">Unknown</option>
   </select>
 
