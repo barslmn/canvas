@@ -20,19 +20,8 @@
       required="true"
     />
 
-    <button
-      type="submit"
-      x-show="!idat_uploading"
-      @click="idat_uploading = true"
-    >
-      Upload
-    </button>
+    <button type="submit" @click="idat_uploading = true">Upload</button>
   </form>
-
-  <div x-show="idat_uploading">
-    <progress id="idat-upload-progress" value="0" max="100"></progress>
-    <span id="idat-upload-span"></span>
-  </div>
 
   <div id="idat-upload-results"></div>
 </div>
