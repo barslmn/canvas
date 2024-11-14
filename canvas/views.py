@@ -540,7 +540,7 @@ profiles {{
         f"ssh canvas@{HOST_IP} 'tsp -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
                                 -f /home/canvas/canvas/docker-compose_prod.yaml \
                                 exec canvas \
-                                python manage.py associate_files --pdf {label} {chip_id} canvas'",
+                                python manage.py associate_files --pdf {chip_id} canvas'",
         shell=True,
     )
 

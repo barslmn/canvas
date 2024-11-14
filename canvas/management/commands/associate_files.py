@@ -16,10 +16,13 @@ class Command(BaseCommand):
         parser.add_argument(
             "bucket_name", type=str, help="MinIO bucket containing the media files"
         )
+        # positional argüman
+        parser.add_argument("--pdf", action="store_true", help="label for pdf")
 
     def handle(self, *args, **options):
         chip_id = options["chip_id"]
         bucket_name = options["bucket_name"]
+        pdf = options["pdf"]
 
         # MinIO client setup
         client = Minio(
@@ -133,6 +136,23 @@ class Command(BaseCommand):
                     )
                     scoresheet_data[clean_variant_id] = dict(row)
             return scoresheet_data
+
+        def gather_pdfs():
+            pass
+        def associate_pdfs():
+            # örnek:
+                # bg, created = BedGraph.objects.get_or_create(
+                #     chipsample=chipsample,
+                #     bedgraph_type=bedgraph_type,
+                #     bedgraph=bedgraph_path,  # Save the MinIO path without downloading
+                # )
+            # pdfleri kaydet
+            pass
+
+        if pdf:
+            # Sadece associate_pdfs()
+            pass
+        # associate_pdfs()
 
         scoresheet_files = gather_scoresheets()
         cnv_files = gather_cnvs()
