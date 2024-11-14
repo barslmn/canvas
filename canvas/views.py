@@ -500,7 +500,7 @@ def create_report(request):
     MINIO_IP = socket.gethostbyname("minio")
     label = secrets.token_urlsafe(6)
 
-    with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as f:
+    with tempfile.NamedTemporaryFile(delete=False, mode="w") as f:
         json.dump(cnvs, f)
     subprocess.run(
         f"scp {f.name} canvas@{HOST_IP}:/tmp/",
