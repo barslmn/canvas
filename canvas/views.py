@@ -494,6 +494,11 @@ def create_report(request):
     cnvs = request.POST.get("cnvs")
     chipsample_pk = request.POST.get("chipsample_pk")
     chipsample = ChipSample.objects.get(id=chipsample_pk)
+    chip_id = chipsample.chip.chip_id
+
+    HOST_IP = get_default_gateway_linux()
+    MINIO_IP = socket.gethostbyname("minio")
+    label = secrets.token_urlsafe(6)
 
     with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as f:
         json.dump(cnvs, f)
@@ -524,13 +529,12 @@ profiles {{
 
     subprocess.run(
         f"ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
-                                            --chip_id {chipsample.chip.chip_id} \
+                                            --chip_id {chip_id} \
                                             --position {chipsample.position} \
                                             --tex_template canvas-pipeline/template/base_template.tex \
                                             --cnv_file {f.name} \
-                                            --institute {chipsample.sample.institute.name} \
+                                            --institute {chipsample.sample.institution.name} \
                                             --protocol_id {chipsample.sample.protocol_id} \
-                                            --label {label} \
                                             -c {fp.name} \
                                             -with-report {chip_id}_{label}.html \
                                             -profile docker",
