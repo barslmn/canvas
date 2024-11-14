@@ -491,9 +491,66 @@ def save_samples(request):
 
 
 def create_report(request):
-    form_data = dict(request.POST)
-    print(form_data)
-    return HTTPResponse("hi")
+    cnvs = request.POST.get("cnvs")
+    chipsample_pk = request.POST.get("chipsample_pk")
+    chipsample = ChipSample.objects.get(id=chipsample_pk)
+
+    with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as f:
+        json.dump(cnvs, f)
+    subprocess.run(
+        f"scp {f.name} canvas@{HOST_IP}:/tmp/",
+        shell=True,
+    )
+
+    with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as fp:
+        fp.write(
+            f"""aws {{
+access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
+secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
+client {{
+endpoint = "http://{MINIO_IP}:9000"
+}}
+}}
+profiles {{
+  docker {{
+    docker.enabled = true
+  }}
+}}"""
+        )
+    subprocess.run(
+        f"scp {fp.name} canvas@{HOST_IP}:/tmp/",
+        shell=True,
+    )
+
+    subprocess.run(
+        f"ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
+                                            --chip_id {chipsample.chip.chip_id} \
+                                            --position {chipsample.position} \
+                                            --tex_template canvas-pipeline/template/base_template.tex \
+                                            --cnv_file {f.name} \
+                                            --institute {chipsample.sample.institute.name} \
+                                            --protocol_id {chipsample.sample.protocol_id} \
+                                            --label {label} \
+                                            -c {fp.name} \
+                                            -with-report {chip_id}_{label}.html \
+                                            -profile docker",
+        shell=True,
+    )
+    subprocess.run(
+        f"ssh canvas@{HOST_IP} 'tsp -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
+                                -f /home/canvas/canvas/docker-compose_prod.yaml \
+                                exec canvas \
+                                python manage.py associate_files --pdf {label} {chip_id} canvas'",
+        shell=True,
+    )
+
+    context = {
+        "reports": [f"{chipsample}a", f"{chipsample}b", f"{chipsample}c"],
+        "button": "true",
+        "chipsample": chipsample,
+    }
+    return render(request, "canvas/partials/report_list.html", context=context)
+
 
 
 def get_reports(request):
