@@ -532,16 +532,16 @@ profiles {{
         )
 
     subprocess.run(
-        f"ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
+        f'ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
                                             --chip_id {chip_id} \
                                             --position {chipsample.position} \
                                             --tex_template canvas-pipeline/template/base_template.tex \
                                             --cnv_file {cnv_file.name} \
-                                            --institute {chipsample.sample.institution.name} \
-                                            --protocol_id {chipsample.sample.protocol_id} \
+                                            --institute "{chipsample.sample.institution.name}" \
+                                            --protocol_id "{chipsample.sample.protocol_id}" \
                                             -c {nfc.name} \
                                             -with-report {chip_id}_{label}.html \
-                                            -profile docker",
+                                            -profile docker',
         shell=True,
     )
     subprocess.run(
