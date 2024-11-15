@@ -19,7 +19,7 @@ class Command(BaseCommand):
         # positional argüman
         parser.add_argument("--pdf", action="store_true", help="label for pdf")
         parser.add_argument(
-            "--classification", narg="+", type=int, help="classification ids"
+            "--classification", nargs="+", type=int, help="classification ids"
         )
 
     def handle(self, *args, **options):
