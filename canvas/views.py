@@ -24,6 +24,7 @@ from canvas.models import (
     Institution,
     Sample,
     SampleType,
+    Report,
 )
 
 from canvas.read_tsv import read_sample_from_tsv
@@ -59,13 +60,14 @@ def start_run(chip_id):
                 ss.write(
                     f"{cs.position}\t{cs.sample.protocol_id}\t{cs.sample.institution.name}\n"
                 )
-        subprocess.run(
-            f"scp {ss.name} canvas@{HOST_IP}:/tmp/",
-            shell=True,
-        )
+            ss.flush()
+            subprocess.run(
+                f"scp {ss.name} canvas@{HOST_IP}:/tmp/",
+                shell=True,
+            )
 
-        with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as fp:
-            fp.write(
+        with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
+            nfc.write(
                 f"""aws {{
   access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
   secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
@@ -79,10 +81,11 @@ profiles {{
   }}
 }}"""
             )
-        subprocess.run(
-            f"scp {fp.name} canvas@{HOST_IP}:/tmp/",
-            shell=True,
-        )
+            nfc.flush()
+            subprocess.run(
+                f"scp {nfc.name} canvas@{HOST_IP}:/tmp/",
+                shell=True,
+            )
 
         subprocess.run(
             f"ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
@@ -96,7 +99,7 @@ profiles {{
                                                 --tex_template canvas-pipeline/template/base_template.tex \
                                                 --output_dir canvas-pipeline-demo-results/ \
                                                 --samplesheet {ss.name} \
-                                                -c {fp.name} \
+                                                -c {nfc.name} \
                                                 -with-report {chip_id}_{label}.html \
                                                 -profile docker",
             shell=True,
@@ -306,7 +309,7 @@ def chipsample_tab_content(request):
         elif bedgraph.bedgraph_type == "CNV_neg":
             cnv_neg_bedgraph = bedgraph
         elif bedgraph.bedgraph_type == "LRR_smooth":
-            lrr_smooth_bedgraph = bedgraph    
+            lrr_smooth_bedgraph = bedgraph
 
     return render(
         request,
@@ -318,7 +321,6 @@ def chipsample_tab_content(request):
             "cnv_pos_bedgraph": cnv_pos_bedgraph,
             "cnv_neg_bedgraph": cnv_neg_bedgraph,
             "lrr_smooth_bedgraph": lrr_smooth_bedgraph,
-            ""
             "cnvs": json.dumps(cnvs),
         },
     )
@@ -491,7 +493,7 @@ def save_samples(request):
 
 
 def create_report(request):
-    cnvs = request.POST.get("cnvs")
+    cnvs = json.loads(request.POST.get("cnvs"))
     chipsample_pk = request.POST.get("chipsample_pk")
     chipsample = ChipSample.objects.get(id=chipsample_pk)
     chip_id = chipsample.chip.chip_id
@@ -500,15 +502,16 @@ def create_report(request):
     MINIO_IP = socket.gethostbyname("minio")
     label = secrets.token_urlsafe(6)
 
-    with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as f:
-        json.dump(cnvs, f)
-    subprocess.run(
-        f"scp {f.name} canvas@{HOST_IP}:/tmp/",
-        shell=True,
-    )
+    with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as cnv_file:
+        json.dump(cnvs, cnv_file)
+        cnv_file.flush()
+        subprocess.run(
+            f"scp {cnv_file.name} canvas@{HOST_IP}:/tmp/",
+            shell=True,
+        )
 
-    with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as fp:
-        fp.write(
+    with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
+        nfc.write(
             f"""aws {{
 access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
 secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
@@ -522,22 +525,23 @@ profiles {{
   }}
 }}"""
         )
-    subprocess.run(
-        f"scp {fp.name} canvas@{HOST_IP}:/tmp/",
-        shell=True,
-    )
+        nfc.flush()
+        subprocess.run(
+            f"scp {nfc.name} canvas@{HOST_IP}:/tmp/",
+            shell=True,
+        )
 
     subprocess.run(
-        f"ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
+        f'ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
                                             --chip_id {chip_id} \
                                             --position {chipsample.position} \
                                             --tex_template canvas-pipeline/template/base_template.tex \
-                                            --cnv_file {f.name} \
-                                            --institute {chipsample.sample.institution.name} \
-                                            --protocol_id {chipsample.sample.protocol_id} \
-                                            -c {fp.name} \
+                                            --cnv_file {cnv_file.name} \
+                                            --institute "{chipsample.sample.institution.name}" \
+                                            --protocol_id "{chipsample.sample.protocol_id}" \
+                                            -c {nfc.name} \
                                             -with-report {chip_id}_{label}.html \
-                                            -profile docker",
+                                            -profile docker',
         shell=True,
     )
     subprocess.run(
@@ -549,12 +553,15 @@ profiles {{
     )
 
     context = {
-        "reports": [f"{chipsample}a", f"{chipsample}b", f"{chipsample}c"],
+        "reports": gather_reports(chipsample),
         "button": "true",
         "chipsample": chipsample,
     }
     return render(request, "canvas/partials/report_list.html", context=context)
 
+
+def gather_reports(chipsample):
+    return Report.objects.filter(chipsample=chipsample)
 
 
 def get_reports(request):
@@ -563,7 +570,7 @@ def get_reports(request):
     chipsample = ChipSample.objects.get(id=chipsample_pk)
 
     context = {
-        "reports": [f"{chipsample}a", f"{chipsample}b", f"{chipsample}c"],
+        "reports": gather_reports(chipsample),
         "button": button,
         "chipsample": chipsample,
     }
@@ -609,8 +616,8 @@ def idat_upload(request):
 
 def upload_excel(request):
     excel_file = request.FILES.get("excel_file")
-    file_path = '/tmp/uploaded_file.tsv'
-    with open(file_path, 'wb+') as destination:
+    file_path = "/tmp/uploaded_file.tsv"
+    with open(file_path, "wb+") as destination:
         for chunk in excel_file.chunks():
             destination.write(chunk)
     sample_list = read_sample_from_tsv(file_path)
