@@ -1,8 +1,26 @@
-{% if button %}
-  {% include 'canvas/components/create_report_button.html' %}
-{% endif %}
-{% for report in reports %}
-  <li>{{ report }}</li>
-{% empty %}
-  <li>No reports created yet!</li>
-{% endfor %}
+<div>
+  <ul>
+    {% if button %}
+      {% include 'canvas/components/create_report_button.html' %}
+    {% endif %}
+    {% for report in reports %}
+      <li>
+        <a
+          href="#"
+          @click="showModal = true; reportUrl = '{{ report.report.url }}'"
+          style="display:inline-block"
+          >{{ report }}</a
+        >
+        <a
+          :href="reportUrl"
+          download
+          style="display:inline-block; float:right;"
+        >
+          <i class="fa-regular fa-circle-down"></i>
+        </a>
+      </li>
+      {% empty %}
+      <li>No reports created yet!</li>
+    {% endfor %}
+  </ul>
+</div>
