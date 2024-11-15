@@ -84,40 +84,6 @@
         </div>
       </div>
       <!-- Full-sized Sample Input View -->
-<<<<<<< HEAD
-
-      <dialog x-bind:open="showModal">
-        <article>
-          <header>
-            <a
-              href="#"
-              style="float:right"
-              aria-label="Close"
-              @click="showModal = false"
-            >
-              <i class="fa-solid fa-xmark pico-color-red-500"></i>
-            </a>
-            <p>
-              <strong>
-                <i class="fa-regular fa-file-pdf"></i>{{ report }}</strong
-              >
-            </p>
-          </header>
-          <object
-            x-bind:data="reportUrl"
-            type="application/pdf"
-            width="100%"
-            height="500px"
-          >
-            <p>
-              Unable to display PDF file.
-              <a :href="reportUrl" download>Download</a> instead.
-            </p>
-          </object>
-        </article>
-      </dialog>
-||||||| parent of 0602683 (added report modal)
-=======
 
       <dialog x-bind:open="showModal">
         <article>
@@ -149,7 +115,6 @@
           </object>
         </article>
       </dialog>
->>>>>>> 0602683 (added report modal)
     </main>
   {% else %}
     {% include "canvas/login.html" %}
