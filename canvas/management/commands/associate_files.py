@@ -1,7 +1,7 @@
 import re
 from minio import Minio
 from django.core.management.base import BaseCommand
-from canvas.models import ChipSample, BedGraph, CNV
+from canvas.models import ChipSample, BedGraph, CNV, Report, Classification
 import csv
 import tempfile
 from collections import defaultdict
@@ -18,6 +18,9 @@ class Command(BaseCommand):
         )
         # positional argüman
         parser.add_argument("--pdf", action="store_true", help="label for pdf")
+        parser.add_argument(
+            "--classification", narg="+", type=int, help="classification ids"
+        )
 
     def handle(self, *args, **options):
         chip_id = options["chip_id"]
@@ -138,21 +141,67 @@ class Command(BaseCommand):
             return scoresheet_data
 
         def gather_pdfs():
-            pass
-        def associate_pdfs():
-            # örnek:
-                # bg, created = BedGraph.objects.get_or_create(
-                #     chipsample=chipsample,
-                #     bedgraph_type=bedgraph_type,
-                #     bedgraph=bedgraph_path,  # Save the MinIO path without downloading
-                # )
-            # pdfleri kaydet
-            pass
+            """
+            Gathers and returns a dictionary of PDF file paths, keyed by position.
+            Format:
+            {
+                "R03C02": ["path to pdf1", "path to pdf2", ...],
+            }
+            """
+            pdf_files = list_files(f"chip_data/{chip_id}/pdfs/")
+            pdf_dict = defaultdict(list)
+            for file in pdf_files:
+                position = extract_position(file)
+                if position and file.endswith(".pdf"):
+                    pdf_dict[position].append(
+                        file
+                    )  # Save MinIO path without downloading
+            return pdf_dict
 
+        def associate_pdfs():
+            """
+            Associates gathered PDF files to the ChipSample entries.
+            Only executes if the --pdf flag is provided.
+            """
+            pdf_files = gather_pdfs()
+            for position, pdf_paths in pdf_files.items():
+                try:
+                    chipsample = ChipSample.objects.get(
+                        chip__chip_id=chip_id, position=position
+                    )
+                except ChipSample.DoesNotExist:
+                    self.stdout.write(
+                        self.style.ERROR(
+                            f"ChipSample not found for position {position}"
+                        )
+                    )
+                    continue
+
+                for pdf_path in pdf_paths:
+                    # Assuming you have a field to store the MinIO path for the PDF in ChipSample or related model
+                    report, created = Report.objects.get_or_create(
+                        chipsample=chipsample,
+                        report=pdf_path,  # Save the MinIO path without downloading
+                    )
+                    if created:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Saved Report {pdf_path} to {chipsample}"
+                            )
+                        )
+                    else:
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"Report {pdf_path} for {chipsample} already exists."
+                            )
+                        )
+
+        # Use the associate_pdfs function only if --pdf flag is provided
         if pdf:
-            # Sadece associate_pdfs()
-            pass
-        # associate_pdfs()
+            associate_pdfs()
+            exit()
+
+        associate_pdfs()
 
         scoresheet_files = gather_scoresheets()
         cnv_files = gather_cnvs()
