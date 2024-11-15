@@ -53,7 +53,7 @@ class ChipType(models.Model):
     fasta_index = models.FileField(
         upload_to="analysis_files/",
         validators=[FileExtensionValidator(allowed_extensions=["fai"])],
-        blank=True
+        blank=True,
     )
     pfb = models.FileField(
         upload_to=analysis_files_directory_path,
@@ -223,7 +223,13 @@ class VCF(models.Model):
 
 
 class BedGraph(models.Model):
-    bedgraph_types = [("LRR", "Log R Ratio"), ("BAF", "B Allele Frequency"), ("CNV_pos", "CNV positive"), ("CNV_neg", "CNV negative"), ("LRR_smooth", "LRR smooth")]
+    bedgraph_types = [
+        ("LRR", "Log R Ratio"),
+        ("BAF", "B Allele Frequency"),
+        ("CNV_pos", "CNV positive"),
+        ("CNV_neg", "CNV negative"),
+        ("LRR_smooth", "LRR smooth"),
+    ]
     chipsample = models.ForeignKey(
         ChipSample,
         on_delete=models.PROTECT,
@@ -286,12 +292,19 @@ class Classification(models.Model):
     )
     classification_json = models.JSONField()
 
+    def __str__(self):
+        return f"{self.cnv.variant_id} {self.user} {self.entry_date}"
+
 
 class Report(models.Model):
     chipsample = models.ForeignKey(
-        ChipSample, on_delete=models.PROTECT, null=True, blank=True, related_name="report"
+        ChipSample,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="report",
     )
-    classifications = models.ManyToManyField(Classification)
+    classifications = models.ManyToManyField(Classification, blank=True)
     entry_date = models.DateTimeField(
         auto_now_add=True
     )  # Change to DateTimeField with auto_now_add=True
@@ -299,3 +312,6 @@ class Report(models.Model):
         upload_to="reports/",
         validators=[FileExtensionValidator(allowed_extensions=["pdf"])],
     )
+
+    def __str__(self):
+        return f"{self.chipsample.sample.protocol_id} {self.entry_date}"
