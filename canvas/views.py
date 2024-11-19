@@ -536,7 +536,7 @@ profiles {{
                                             --chip_id {chip_id} \
                                             --position {chipsample.position} \
                                             --tex_template canvas-pipeline/template/base_template.tex \
-                                            --cnv_file {cnv_file.name} \
+                                            --cnvs {cnv_file.name} \
                                             --institute "{chipsample.sample.institution.name}" \
                                             --protocol_id "{chipsample.sample.protocol_id}" \
                                             -c {nfc.name} \
