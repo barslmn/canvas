@@ -494,6 +494,7 @@ def save_samples(request):
 
 def create_report(request):
     cnvs = json.loads(request.POST.get("cnvs"))
+    cnvs = {cnv["VariantID"]:cnv for cnv in cnvs}
     chipsample_pk = request.POST.get("chipsample_pk")
     chipsample = ChipSample.objects.get(id=chipsample_pk)
     chip_id = chipsample.chip.chip_id
