@@ -3,7 +3,15 @@
   hx-vals="js:{
           'chipsample_pk': {{ chipsample.pk }},
           'cnvs': JSON.stringify(
-              Tabulator.findTable('#cnv-table-{{ chipsample.pk }}')[0].getData().filter(e => e.addToReport===true)
+              Tabulator.findTable('#cnv-table-{{ chipsample.pk }}')[0].getData()
+              .filter(e => e.addToReport===true)
+              .map(e => ({
+                ...e,
+                numsnp_info: `numsnp_info=${e.numsnp_info}`,
+                length_info: `length_info=${e.length_info}`,
+                conf: `conf=${e.conf}`
+                
+            }))
           )}"
   hx-target="closest ul"
 >
