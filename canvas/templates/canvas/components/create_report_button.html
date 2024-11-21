@@ -5,7 +5,10 @@
           'cnvs': JSON.stringify(
               Tabulator.findTable('#cnv-table-{{ chipsample.pk }}')[0].getData()
               .filter(e => e.addToReport===true)
-              .map(e => ({...e, numsnp_info: `numsnp_info=${e.numsnp_info}`}))
+              .map(e => ({
+                ...e,
+                numsnp_info: `numsnp_info=${e.numsnp_info}`
+            }))
           )}"
   hx-target="closest ul"
 >
