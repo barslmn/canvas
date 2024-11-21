@@ -8,7 +8,9 @@
               .map(e => ({
                 ...e,
                 numsnp_info: `numsnp_info=${e.numsnp_info}`,
-                length_info: `length_info=${e.length_info}`
+                length_info: `length_info=${e.length_info}`,
+                conf: `conf=${e.conf}`
+                
             }))
           )}"
   hx-target="closest ul"
