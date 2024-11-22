@@ -1,19 +1,42 @@
-<button
-  hx-post="{% url 'create_report' %}"
-  hx-vals="js:{
-          'chipsample_pk': {{ chipsample.pk }},
-          'cnvs': JSON.stringify(
-              Tabulator.findTable('#cnv-table-{{ chipsample.pk }}')[0].getData()
-              .filter(e => e.addToReport===true)
-              .map(e => ({
-                ...e,
-                numsnp_info: `numsnp_info=${e.numsnp_info}`,
-                length_info: `length_info=${e.length_info}`,
-                conf: `conf=${e.conf}`
-                
-            }))
-          )}"
-  hx-target="closest ul"
->
-  Create report
-</button>
+<div class="inline-flex" hx-indicator="this">
+  <button
+    hx-post="{% url 'create_report' %}"
+    hx-vals="js:{
+      'chipsample_pk': {{ chipsample.pk }},
+      'cnvs': JSON.stringify(
+        Tabulator.findTable('#cnv-table-{{ chipsample.pk }}')[0].getData()
+        .filter(e => e.addToReport===true)
+        .map(e => ({
+          ...e,
+          numsnp_info: `numsnp_info=${e.numsnp_info}`,
+          length_info: `length_info=${e.length_info}`,
+          conf: `conf=${e.conf}`
+        }))
+      )
+    }"
+    hx-target="closest ul"
+    hx-swap="outerHTML"
+  >
+    Create report
+  </button>
+  <i
+    id="report-indicator"
+    class="fa-solid fa-spinner fa-spin-pulse htmx-indicator"
+  ></i>
+</div>
+
+<style>
+  .htmx-indicator {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+  }
+  .htmx-request button {
+    display: none;
+  }
+  .htmx-request .htmx-indicator {
+    opacity: 1;
+  }
+  #report-indicator {
+    margin-left: 0.5rem;
+  }
+</style>

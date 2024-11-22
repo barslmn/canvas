@@ -496,64 +496,65 @@ def save_samples(request):
 
 def create_report(request):
     cnvs = json.loads(request.POST.get("cnvs"))
-    cnvs = {cnv["VariantID"]:cnv for cnv in cnvs}
+    cnvs = {cnv["VariantID"]: cnv for cnv in cnvs}
     chipsample_pk = request.POST.get("chipsample_pk")
     chipsample = ChipSample.objects.get(id=chipsample_pk)
     chip_id = chipsample.chip.chip_id
 
-    HOST_IP = get_default_gateway_linux()
-    MINIO_IP = socket.gethostbyname("minio")
-    label = secrets.token_urlsafe(6)
+    if not settings.DEBUG:
+        HOST_IP = get_default_gateway_linux()
+        MINIO_IP = socket.gethostbyname("minio")
+        label = secrets.token_urlsafe(6)
 
-    with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as cnv_file:
-        json.dump(cnvs, cnv_file)
-        cnv_file.flush()
+        with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as cnv_file:
+            json.dump(cnvs, cnv_file)
+            cnv_file.flush()
+            subprocess.run(
+                f"scp {cnv_file.name} canvas@{HOST_IP}:/tmp/",
+                shell=True,
+            )
+
+        with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
+            nfc.write(
+                f"""aws {{
+    access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
+    secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
+    client {{
+    endpoint = "http://{MINIO_IP}:9000"
+    }}
+    }}
+    profiles {{
+    docker {{
+        docker.enabled = true
+    }}
+    }}"""
+            )
+            nfc.flush()
+            subprocess.run(
+                f"scp {nfc.name} canvas@{HOST_IP}:/tmp/",
+                shell=True,
+            )
+
         subprocess.run(
-            f"scp {cnv_file.name} canvas@{HOST_IP}:/tmp/",
+            f'ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
+                                                --chip_id {chip_id} \
+                                                --position {chipsample.position} \
+                                                --tex_template canvas-pipeline/template/base_template.tex \
+                                                --cnvs {cnv_file.name} \
+                                                --institute "{chipsample.sample.institution.name}" \
+                                                --protocol_id "{chipsample.sample.protocol_id}" \
+                                                -c {nfc.name} \
+                                                -with-report {chip_id}_{label}.html \
+                                                -profile docker',
             shell=True,
         )
-
-    with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
-        nfc.write(
-            f"""aws {{
-access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
-secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
-client {{
-endpoint = "http://{MINIO_IP}:9000"
-}}
-}}
-profiles {{
-  docker {{
-    docker.enabled = true
-  }}
-}}"""
-        )
-        nfc.flush()
         subprocess.run(
-            f"scp {nfc.name} canvas@{HOST_IP}:/tmp/",
+            f"ssh canvas@{HOST_IP} 'tsp -f -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
+                                    -f /home/canvas/canvas/docker-compose_prod.yaml \
+                                    exec canvas \
+                                    python manage.py associate_files --pdf {chip_id} canvas'",
             shell=True,
         )
-
-    subprocess.run(
-        f'ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
-                                            --chip_id {chip_id} \
-                                            --position {chipsample.position} \
-                                            --tex_template canvas-pipeline/template/base_template.tex \
-                                            --cnvs {cnv_file.name} \
-                                            --institute "{chipsample.sample.institution.name}" \
-                                            --protocol_id "{chipsample.sample.protocol_id}" \
-                                            -c {nfc.name} \
-                                            -with-report {chip_id}_{label}.html \
-                                            -profile docker',
-        shell=True,
-    )
-    subprocess.run(
-        f"ssh canvas@{HOST_IP} 'tsp -f -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
-                                -f /home/canvas/canvas/docker-compose_prod.yaml \
-                                exec canvas \
-                                python manage.py associate_files --pdf {chip_id} canvas'",
-        shell=True,
-    )
 
     context = {
         "reports": gather_reports(chipsample),
@@ -564,7 +565,7 @@ profiles {{
 
 
 def gather_reports(chipsample):
-    return Report.objects.filter(chipsample=chipsample)
+    return Report.objects.filter(chipsample=chipsample).order_by("-entry_date")
 
 
 def get_reports(request):
