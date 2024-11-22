@@ -19,14 +19,19 @@
   >
     Create report
   </button>
-  <i
-    id="report-indicator"
-    class="fa-solid fa-spinner fa-spin-pulse htmx-indicator"
-  ></i>
+  <div id="report-indicator" class="htmx-indicator">
+    <i class="fa-regular fa-file-pdf fa-bounce fa-2xl"></i>
+    <span> Creating your report</span>
+    <i
+      style="transform: translateY(30%);"
+      class="fa-solid fa-ellipsis fa-fade"
+    ></i>
+  </div>
 </div>
 
 <style>
   .htmx-indicator {
+    display: none;
     opacity: 0;
     transition: opacity 200ms ease-in;
   }
@@ -34,6 +39,7 @@
     display: none;
   }
   .htmx-request .htmx-indicator {
+    display: inherit;
     opacity: 1;
   }
   #report-indicator {
