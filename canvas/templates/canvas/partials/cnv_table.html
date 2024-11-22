@@ -44,6 +44,22 @@ var rowMenu = [
                     // Open the ClinGen search in a new tab
                     window.open(clingenUrl, '_blank');
                 }
+            },
+            {
+                label:"<i class='fas fa-vial'></i> Search in UCSC",
+                action:function(e, row){
+                    // Get row data
+                    var data = row.getData();
+                    var chromosome = data["Chromosome"];
+                    var start = data["Start"];
+                    var end = data["End"];
+
+                    // Construct the ClinGen URL
+                    var UCSCUrl = `https://search.clinicalgenome.org/kb/regions?page=1&type=GRCh37&region=chr${chromosome}%3A${start}-${end}&size=25&search=`;
+
+                    // Open the ClinGen search in a new tab
+                    window.open(UCSCUrl, '_blank');
+                }
             }
         ]
     }
@@ -52,12 +68,24 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
     data:{{ cnvs|safe }},
     layout:"fitData",
     rowContextMenu: rowMenu,
-    responsiveLayout: "collapse",
-    rowHeader:{formatter:"responsiveCollapse", width:30, minWidth:30, hozAlign:"center", resizable:false, headerSort:false},
-    responsiveLayoutCollapseStartOpen:false,
+    rowHeader:{width:30, minWidth:30, hozAlign:"center", resizable:false, headerSort:false},
     height:"20vh",
     maxHeight:"100%",
     columns: [
+        {
+            title: "Details",
+            field: "details",
+            hozAlign: "center",
+            formatter: function(cell, formatterParams) {
+                // Get the cell value
+                let checked = cell.getValue() ? 'checked' : '';
+                // Return checkbox with correct checked status
+                return `<a href="#" @click="showVariantModal = true"> <i class="fa-regular fa-pen-to-square"></i></a>`;
+            },
+            cellClick: function(e, cell) {
+                // Toggle the checkbox when the cell is clicked
+            },
+        },
         {
             title: "Add to Report",
             field: "addToReport",

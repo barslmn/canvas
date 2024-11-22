@@ -244,6 +244,8 @@ def sample_search(request):
     page = request.GET.get("page")
     institutions = request.GET.getlist("institutions")
     chips = request.GET.getlist("chips")
+    # hack  for searching unicode chars in protocol_ids
+    query = query.upper()
 
     # Start with filtering by protocol ID
     samples = Sample.objects.filter(protocol_id__icontains=query)
