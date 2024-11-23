@@ -31,5 +31,6 @@ urlpatterns = [
     path("chip_edit/", views.chip_edit, name="chip_edit"),
     path("chip_search", views.chip_search, name="chip_search"),
     path("upload_excel/", views.upload_excel, name="upload_excel"),
+    path("get_acmg", views.get_acmg, name="get_acmg"),
     path("save_acmg", views.save_acmg, name="save_acmg"),
 ]

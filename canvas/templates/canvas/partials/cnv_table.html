@@ -68,8 +68,8 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
     data:{{ cnvs|safe }},
     layout:"fitData",
     rowContextMenu: rowMenu,
-    rowHeader:{width:30, minWidth:30, hozAlign:"center", resizable:false, headerSort:false},
-    height:"20vh",
+    rowHeader:{width:30, minWidth:30, hozAlign:"center", resizable:true, headerSort:true},
+    height:"40vh",
     maxHeight:"100%",
     columns: [
         {
@@ -77,13 +77,11 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             field: "details",
             hozAlign: "center",
             formatter: function(cell, formatterParams) {
-                // Get the cell value
-                let checked = cell.getValue() ? 'checked' : '';
-                // Return checkbox with correct checked status
-                return `<a href="#" @click="showVariantModal = true"> <i class="fa-regular fa-pen-to-square"></i></a>`;
-            },
-            cellClick: function(e, cell) {
-                // Toggle the checkbox when the cell is clicked
+                return `<a href="#"
+                           hx-post="{% url 'get_acmg' %}"
+                           hx-vals='{"cnv_pk": `+ cell.getRow().getData()["cnv_pk"] + `}'
+                           hx-target="#variantModal"
+                           @click="showVariantModal = true" > <i class="fa-regular fa-pen-to-square"></i></a>`;
             },
         },
         {

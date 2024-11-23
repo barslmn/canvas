@@ -1,6 +1,10 @@
-<dialog x-bind:open="showVariantModal">
-  <article>
+<dialog id="variantModal" x-bind:open="showVariantModal">
+  <article style="width: 80vw;">
     <header>
+      <h3>{{ cnv.variant_id }}</h3>
+      {% if success %}
+        Successfully saved the classification.
+      {% endif %}
       <a
         href="#"
         style="float:right"
@@ -10,5 +14,12 @@
         <i class="fa-solid fa-xmark pico-color-red-500"></i>
       </a>
     </header>
+    {% include "canvas/components/acmg_loss.html" %}
   </article>
 </dialog>
+
+<style>
+  dialog article {
+    max-width: unset;
+  }
+</style>
