@@ -67,8 +67,9 @@ var rowMenu = [
 var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
     data:{{ cnvs|safe }},
     layout:"fitData",
+    index:"cnv_pk",
     rowContextMenu: rowMenu,
-    rowHeader:{width:30, minWidth:30, hozAlign:"center", resizable:true, headerSort:true},
+    rowHeader:{width:30, minWidth:30, hozAlign:"center", resizable:false, headerSort:false},
     height:"40vh",
     maxHeight:"100%",
     columns: [
@@ -81,7 +82,8 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
                            hx-post="{% url 'get_acmg' %}"
                            hx-vals='{"cnv_pk": `+ cell.getRow().getData()["cnv_pk"] + `}'
                            hx-target="#variantModal"
-                           @click="showVariantModal = true" > <i class="fa-regular fa-pen-to-square"></i></a>`;
+                           hx-swap="outerHTML"
+                           @click="showVariantModal = true" > <i class="fa-solid fa-circle-info"></i></a>`;
             },
         },
         {
@@ -129,7 +131,7 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
                 },
                 headerSortStartingDir: "asc"
         },
-        {title: "Total Score", field: "Total score"},
+        {title: "Total Score", field: "total_score"},
         {title: "Chromosome", field: "Chromosome", responsive:2},
         {title: "Start", field: "Start", responsive:2},
         {title: "End", field: "End", responsive:2},

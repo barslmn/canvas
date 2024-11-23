@@ -1,18 +1,18 @@
 <form
   hx-post="{% url 'save_acmg' %}"
   x-data="{
-  totalScore: 0,
+  total_score: 0,
   classification: '',
   sectionScores: {},
   updateClassification() {
-    if (this.totalScore >= 0.99) this.classification = 'Pathogenic';
-    else if (this.totalScore >= 0.90) this.classification = 'Likely Pathogenic';
-    else if (this.totalScore >= -0.89) this.classification = 'VUS';
-    else if (this.totalScore >= -0.98) this.classification = 'Likely Benign';
+    if (this.total_score >= 0.99) this.classification = 'Pathogenic';
+    else if (this.total_score >= 0.90) this.classification = 'Likely Pathogenic';
+    else if (this.total_score >= -0.89) this.classification = 'VUS';
+    else if (this.total_score >= -0.98) this.classification = 'Likely Benign';
     else this.classification = 'Benign';
   },
   updateTotal() {
-    this.totalScore = Object.values(this.sectionScores).reduce((a, b) => a + b, 0);
+    this.total_score = Object.values(this.sectionScores).reduce((a, b) => a + b, 0);
     this.updateClassification();
   },
   classificationColor() {
@@ -33,9 +33,13 @@
   }
 }"
   @update-section-score.window="e => { sectionScores[e.detail.section] = e.detail.score; updateTotal(); }"
+  {% if cnv %}
+    x-init="$nextTick(() => { total_score = {{ cnv.cnv_json.Total_score }};
+    classification = '{{ cnv.cnv_json.Classification }}'; })"
+  {% endif %}
 >
   <article
-    :style="'width:180px;position:fixed; right:2em; top:16vh; z-index:99; border-radius:2em; border-style:solid; border-color:' + classificationColor() + '; box-shadow: 0em 0em 0.4em 0em ' + classificationColor() +';'"
+    :style="'width:8vw;position:fixed; right:.6em; top:6vh; border-radius:2em; border-style:solid; border-color:' + classificationColor() + '; box-shadow: 0em 0em 0.4em 0em ' + classificationColor() +';'"
   >
     <input name="cnv_pk" hidden value="{{ cnv.pk }}" />
     <label for="classification">Classification:</label>
@@ -46,20 +50,22 @@
       x-bind:value="classification"
       style="border:none; background:transparent; font-weight:bold;"
     />
-    <label for="totalScore">Total Score:</label>
+    <label for="total_score">Total Score:</label>
     <input
       type="text"
-      name="totalScore"
+      name="total_score"
       readonly
-      x-bind:value="totalScore.toFixed(2)"
+      x-bind:value="total_score.toFixed(2)"
       style="border:none; background:transparent; font-weight:bold;"
     />
-    <button
-      :style="'background-color:' + classificationColor() +'; border-color:' + classificationColor()"
-      type="submit"
-    >
-      Submit
-    </button>
+    <footer>
+      <button
+        :style="'background-color:' + classificationColor() +'; border-color:' + classificationColor()"
+        type="submit"
+      >
+        Submit
+      </button>
+    </footer>
   </article>
 
   {% for section in acmg_loss %}
@@ -82,15 +88,21 @@
           {% for evidence in group %}
             <article
               class="evidence-card"
-              :class="{ 'glow': selected === '{{ evidence.id }}' }"
+              :class="{ 'glow': selected === '{{ evidence.name }}' }"
+              {% if evidence.score != 0 %}
+                x-init="selected = '{{ evidence.name }}'"
+              {% endif %}
+              {% if evidence.checked %}
+                x-init="selected = '{{ evidence.name }}'"
+              {% endif %}
             >
               <header style="border-radius:2em;">
                 <input
                   type="radio"
-                  :value="'{{ evidence.id }}'"
+                  :value="'{{ evidence.name }}'"
                   name="{{ section.id }}"
                   x-model="selected"
-                  @input="values={}; selected='{{ evidence.id }}'; values['{{ evidence.id }}'] = {{ evidence.suggested }}; updateScore()"
+                  @input="values={}; selected='{{ evidence.name }}'; values['{{ evidence.name }}'] = {{ evidence.suggested }}; updateScore()"
                 />
                 {{ evidence.name }}
                 {{ evidence.description }}
@@ -104,22 +116,22 @@
                     min="{{ evidence.min }}"
                     max="{{ evidence.max }}"
                     step=".05"
-                    :value="values['{{ evidence.id }}']"
-                    @input="values={}; selected='{{ evidence.id }}'; values['{{ evidence.id }}'] = $event.target.value; updateScore()"
+                    :value="values['{{ evidence.name }}']"
+                    @input="values={}; selected='{{ evidence.name }}'; values['{{ evidence.name }}'] = $event.target.value; updateScore()"
                   />
                 {% endif %}
 
                 <div
                   style="display:flex; flex-direction: column; align-items: center;"
                 >
-                  <div x-show="selected === '{{ evidence.id }}'">
+                  <div x-show="selected === '{{ evidence.name }}'">
                     <span> Assigned points:</span>
                     <br />
                     <input
                       type="text"
-                      name="{{ evidence.id }}"
+                      name="{{ evidence.name }}"
                       readonly
-                      x-bind:value="values['{{ evidence.id }}']"
+                      x-bind:value="values['{{ evidence.name }}']"
                       style="border:none; background:transparent; font-weight:bold;"
                     />
                   </div>
@@ -139,6 +151,10 @@
   {% endfor %}
 </form>
 
+{% for k, v in cnv.cnv_json.items %}
+  <p>{{ k }}: {{ v }}</p>
+{% endfor %}
+
 <style>
   .evidence-card {
     padding: 1.4em 1em 1em 1em;
@@ -150,9 +166,9 @@
   }
 
   .evidence-card.glow {
-    border-color: var(--pico-color-pink-400);
+    border-color: var(--pico-color-slate-400);
     border-radius: 2em;
-    box-shadow: 0em 0em 1em 0em var(--pico-color-pink-250);
+    box-shadow: 0em 0em 1em 0em var(--pico-color-slate-250);
   }
 
   .slider-grid {

@@ -1,5 +1,5 @@
 <dialog id="variantModal" x-bind:open="showVariantModal">
-  <article style="width: 80vw;">
+  <article style="width: 80vw; border-radius: 2em;">
     <header>
       <h3>{{ cnv.variant_id }}</h3>
       {% if success %}
@@ -7,7 +7,7 @@
       {% endif %}
       <a
         href="#"
-        style="float:right"
+        style="float:right; transform: translateY(-100%)"
         aria-label="Close"
         @click="showVariantModal = false"
       >
@@ -23,3 +23,17 @@
     max-width: unset;
   }
 </style>
+
+{% if success %}
+  <script>
+    table.updateData([
+      {
+        cnv_pk: "{{ cnv.pk }}",
+        Classification:
+          "{{ classification.classification_json.classification }}",
+        total_score: "{{ classification.classification_json.total_score }}",
+        classification_pk: "{{ classification.pk }}",
+      },
+    ]);
+  </script>
+{% endif %}

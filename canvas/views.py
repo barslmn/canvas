@@ -4,7 +4,6 @@ import socket
 import struct
 import subprocess
 import tempfile
-from http.client import HTTPResponse
 
 from django.apps import apps
 from django.conf import settings
@@ -26,6 +25,7 @@ from canvas.models import (
     SampleType,
     Report,
     CNV,
+    Classification,
 )
 
 from canvas.read_tsv import read_sample_from_tsv
@@ -151,7 +151,7 @@ acmg_loss = [
                     "id": "e2E",
                     "name": "2E",
                     "description": "Both breakpoints are within the same gene (intragenic CNV; gene-level sequence variant)",
-                    "score": "null",
+                    "score": 0,
                     "suggested": "null",
                     "ranges": {
                         "PVS1": [0.45, 0.90],
@@ -584,7 +584,6 @@ def get_institutions_for_user(user, institutions=None):
 
 
 def index(request):
-
     samples = get_samples_for_user(request.user).order_by("-entry_date")
     len_samples = len(samples)
     sample_paginator = Paginator(samples, 12)
@@ -727,6 +726,7 @@ def chipsample_tab_content(request):
     for cnv in chipsample.cnv.all():
         cnv_json = cnv.cnv_json
         cnv_json["cnv_pk"] = cnv.pk
+        cnv_json["total_score"] = cnv_json.pop("Total score", None)
         cnv_json["addToReport"] = False
         cnvs.append(cnv_json)
 
@@ -932,10 +932,17 @@ def save_samples(request):
 def create_report(request):
     cnvs = json.loads(request.POST.get("cnvs"))
     cnvs = {cnv["VariantID"]: cnv for cnv in cnvs}
+    for variant_id, cnv in cnvs.items():
+        if "classification_pk" in cnv.keys():
+            classification = Classification.objects.get(pk=cnv["classification_pk"])
+            cnv.update(classification.classification_json)
+            cnv["Classification"] = classification.classification_json["classification"]
+            cnv["Total score"] = classification.classification_json["total_score"]
     chipsample_pk = request.POST.get("chipsample_pk")
     chipsample = ChipSample.objects.get(id=chipsample_pk)
     chip_id = chipsample.chip.chip_id
 
+    print(cnvs)
     if not settings.DEBUG:
         HOST_IP = get_default_gateway_linux()
         MINIO_IP = socket.gethostbyname("minio")
@@ -990,9 +997,6 @@ def create_report(request):
                                     python manage.py associate_files --pdf {chip_id} canvas'",
             shell=True,
         )
-    import time
-
-    time.sleep(5)
 
     context = {
         "reports": gather_reports(chipsample),
@@ -1067,10 +1071,34 @@ def upload_excel(request):
     return render(request, "canvas/partials/samples_from_excel.html", context)
 
 
+def get_evidences(cnv, acmg_loss=acmg_loss):
+    for section in acmg_loss:
+        for group, evidences in section["evidences"].items():
+            for evidence in evidences:
+                if cnv.cnv_json["1A-B"] == "0.0" and evidence["name"] == "1A":
+                    evidence["score"] = 0.0
+                    evidence["checked"] = "checked"
+                if cnv.cnv_json["1A-B"] == "-0.6" and evidence["name"] == "1B":
+                    evidence["score"] = -0.6
+                if cnv.cnv_json["3"] == "0.0" and evidence["name"] == "3A":
+                    evidence["score"] = 0.0
+                if cnv.cnv_json["3"] == "0.45" and evidence["name"] == "3B":
+                    evidence["score"] = 0.45
+                if cnv.cnv_json["3"] == "0.9" and evidence["name"] == "3C":
+                    evidence["score"] = 0.9
+                try:
+                    evidence["score"] = float(cnv.cnv_json[evidence["name"]])
+                except KeyError:
+                    pass
+    return acmg_loss
+
+
 def get_acmg(request):
     if request.method == "POST":
         cnv_pk = request.POST.get("cnv_pk")
         cnv = CNV.objects.get(pk=cnv_pk)
+        cnv.cnv_json["total_score"] = cnv.cnv_json.pop("Total score", None)
+        acmg_loss = get_evidences(cnv)
     return render(
         request,
         "canvas/components/variant_modal.html",
@@ -1081,7 +1109,18 @@ def get_acmg(request):
 def save_acmg(request):
     if request.method == "POST":
         form_data = dict(request.POST)
-        cnv_pk = form_data["cnv_pk"][0]
-        cnv = CNV.objects.get(pk=cnv_pk)
-        context = {"cnv": cnv, "acmg_loss": acmg_loss, "success": "True"}
+        cnv_data = {k: v[0] for k, v in form_data.items()}
+        cnv = CNV.objects.get(pk=cnv_data["cnv_pk"])
+        acmg_loss = get_evidences(cnv)
+        classification = Classification.objects.create(
+            cnv=cnv,
+            user=request.user,
+            classification_json=cnv_data,
+        )
+        context = {
+            "cnv": cnv,
+            "classification": classification,
+            "acmg_loss": acmg_loss,
+            "success": "True",
+        }
     return render(request, "canvas/components/variant_modal.html", context)
