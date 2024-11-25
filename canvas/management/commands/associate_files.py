@@ -19,13 +19,14 @@ class Command(BaseCommand):
         # positional argüman
         parser.add_argument("--pdf", action="store_true", help="label for pdf")
         parser.add_argument(
-            "--classification", nargs="+", type=int, help="classification ids"
+            "--classification_ids", nargs="+", type=int, help="classification ids"
         )
 
     def handle(self, *args, **options):
         chip_id = options["chip_id"]
         bucket_name = options["bucket_name"]
         pdf = options["pdf"]
+        classification_ids = options["classification_ids"]
 
         # MinIO client setup
         client = Minio(
@@ -183,6 +184,16 @@ class Command(BaseCommand):
                         chipsample=chipsample,
                         report=pdf_path,  # Save the MinIO path without downloading
                     )
+                    if classification_ids:
+                        classifications = Classification.objects.filter(
+                            id__in=classification_ids
+                        )
+                        report.classifications.add(*classifications)
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Added {len(classifications)} classifications to report {pdf_path}."
+                            )
+                        )
                     if created:
                         self.stdout.write(
                             self.style.SUCCESS(

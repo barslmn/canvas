@@ -257,8 +257,6 @@ acmg_loss = [
                     "min": 0,
                     "max": 0.30,
                 },
-            ],
-            "group2": [
                 {
                     "id": "e4D",
                     "name": "4D",
@@ -268,6 +266,8 @@ acmg_loss = [
                     "min": -0.30,
                     "max": 0,
                 },
+            ],
+            "group2": [
                 {
                     "id": "e4E",
                     "name": "4E",
@@ -286,8 +286,6 @@ acmg_loss = [
                     "min": 0,
                     "max": 0.45,
                 },
-            ],
-            "group3": [
                 {
                     "id": "e4G",
                     "name": "4G",
@@ -306,6 +304,8 @@ acmg_loss = [
                     "min": 0,
                     "max": 0.45,
                 },
+            ],
+            "group3": [
                 {
                     "id": "e4I",
                     "name": "4I",
@@ -315,8 +315,6 @@ acmg_loss = [
                     "min": -0.45,
                     "max": 0,
                 },
-            ],
-            "group4": [
                 {
                     "id": "e4J",
                     "name": "4J",
@@ -345,7 +343,7 @@ acmg_loss = [
                     "max": 0.45,
                 },
             ],
-            "group5": [
+            "group4": [
                 {
                     "id": "e4M",
                     "name": "4M",
@@ -408,8 +406,6 @@ acmg_loss = [
                     "min": -0.30,
                     "max": 0,
                 },
-            ],
-            "group2": [
                 {
                     "id": "e5D",
                     "name": "5D",
@@ -419,6 +415,8 @@ acmg_loss = [
                     "min": 0.15,
                     "max": 0.45,
                 },
+            ],
+            "group2": [
                 {
                     "id": "e5E",
                     "name": "5E",
@@ -437,8 +435,6 @@ acmg_loss = [
                     "min": 0,
                     "max": 0,
                 },
-            ],
-            "group3": [
                 {
                     "id": "e5G",
                     "name": "5G",
@@ -458,6 +454,193 @@ acmg_loss = [
                     "max": 0.30,
                 },
             ],
+        },
+    },
+]
+
+acmg_gain = [
+    {
+        "id": "section1",
+        "name": "Section 1: Initial Assessment of Genomic Content",
+        "evidences": {
+            "group1": [
+                {
+                    "id": "e1A",
+                    "name": "1A",
+                    "description": "Contains protein-coding or other known functionally important elements",
+                    "score": 0,
+                    "suggested": 0,
+                    "min": 0,
+                    "max": 1,
+                },
+                {
+                    "id": "e1B",
+                    "name": "1B",
+                    "description": "Does NOT contain protein-coding or any known functionally important elements",
+                    "score": 0,
+                    "suggested": -0.60,
+                    "min": -0.60,
+                    "max": -0.60,
+                },
+            ]
+        },
+    },
+    {
+        "id": "section2",
+        "name": "Section 2: Overlap with Established Triplosensitive (TS), Haploinsufficient (HI), or Benign Genes or Genomic Regions",
+        "evidences": {
+            "group1": [
+                {
+                    "id": "e2A",
+                    "name": "2A",
+                    "description": "Complete overlap of an established TS gene/genomic region",
+                    "score": 0,
+                    "suggested": 1.00,
+                    "min": 0.00,
+                    "max": 1.00,
+                },
+                {
+                    "id": "e2B",
+                    "name": "2B",
+                    "description": "Partial overlap of an established TS region. Observed CNV does NOT contain the known causative gene/critical region OR unclear if affected OR no specific causative gene.",
+                    "score": 0,
+                    "suggested": 0,
+                    "min": 0,
+                    "max": 0,
+                },
+                {
+                    "id": "e2C",
+                    "name": "2C",
+                    "description": "Identical in gene content to the established benign copy number gain",
+                    "score": 0,
+                    "suggested": -1.00,
+                    "min": -1.00,
+                    "max": -1.00,
+                },
+            ]
+        },
+    },
+    {
+        "id": "section3",
+        "name": "Section 3: Evaluation of Gene Number",
+        "evidences": {
+            "group1": [
+                {
+                    "id": "e3A",
+                    "name": "3A",
+                    "description": "0-34 protein-coding RefSeq genes wholly or partially included in the gain",
+                    "score": 0,
+                    "suggested": 0,
+                    "min": 0,
+                    "max": 0,
+                },
+                {
+                    "id": "e3B",
+                    "name": "3B",
+                    "description": "35-49 protein-coding RefSeq genes wholly or partially included in the gain",
+                    "score": 0,
+                    "suggested": 0.45,
+                    "min": 0.45,
+                    "max": 0.45,
+                },
+                {
+                    "id": "e3C",
+                    "name": "3C",
+                    "description": "50 or more protein-coding RefSeq genes wholly or partially included in the gain",
+                    "score": 0,
+                    "suggested": 0.90,
+                    "min": 0.90,
+                    "max": 0.90,
+                },
+            ]
+        },
+    },
+    {
+        "id": "section4",
+        "name": "Section 4: Detailed Evaluation of Genomic Content Using Cases from Published Literature, Public Databases, and/or Internal Lab Data",
+        "evidences": {
+            "group1": [
+                {
+                    "id": "e4A",
+                    "name": "4A",
+                    "description": "Reported phenotype is highly specific and relatively unique to the gene or genomic region; confirmed de novo",
+                    "score": 0,
+                    "suggested": 0.45,
+                    "min": 0.15,
+                    "max": 0.45,
+                },
+                {
+                    "id": "e4B",
+                    "name": "4B",
+                    "description": "Reported phenotype is consistent with the gene/genomic region but not necessarily unique; confirmed de novo",
+                    "score": 0,
+                    "suggested": 0.30,
+                    "min": 0,
+                    "max": 0.45,
+                },
+                {
+                    "id": "e4C",
+                    "name": "4C",
+                    "description": "Reported phenotype is consistent with the gene/genomic region but not highly specific; confirmed de novo",
+                    "score": 0,
+                    "suggested": 0.15,
+                    "min": 0,
+                    "max": 0.30,
+                },
+                {
+                    "id": "e4D",
+                    "name": "4D",
+                    "description": "Reported phenotype is NOT consistent with the gene/genomic region or not consistent in general",
+                    "score": 0,
+                    "suggested": -0.30,
+                    "min": -0.30,
+                    "max": -0.30,
+                },
+            ]
+        },
+    },
+    {
+        "id": "section5",
+        "name": "Section 5: Evaluation of Inheritance Patterns/Family History for Patient Being Studied",
+        "evidences": {
+            "group1": [
+                {
+                    "id": "e5A",
+                    "name": "5A",
+                    "description": "Observed copy number gain is DE NOVO",
+                    "score": 0,
+                    "suggested": 0.45,
+                    "min": 0.15,
+                    "max": 0.45,
+                },
+                {
+                    "id": "e5B",
+                    "name": "5B",
+                    "description": "Copy number gain is inherited from an unaffected parent; patient has specific phenotype",
+                    "score": 0,
+                    "suggested": -0.30,
+                    "min": -0.30,
+                    "max": -0.45,
+                },
+                {
+                    "id": "e5C",
+                    "name": "5C",
+                    "description": "Copy number gain is inherited from an unaffected parent; patient has non-specific phenotype",
+                    "score": 0,
+                    "suggested": -0.15,
+                    "min": -0.15,
+                    "max": -0.30,
+                },
+                {
+                    "id": "e5D",
+                    "name": "5D",
+                    "description": "CNV segregates with consistent phenotype observed in the patient’s family",
+                    "score": 0,
+                    "suggested": 0.45,
+                    "min": 0.15,
+                    "max": 0.45,
+                },
+            ]
         },
     },
 ]
@@ -932,8 +1115,10 @@ def save_samples(request):
 def create_report(request):
     cnvs = json.loads(request.POST.get("cnvs"))
     cnvs = {cnv["VariantID"]: cnv for cnv in cnvs}
+    classification_ids = []
     for variant_id, cnv in cnvs.items():
         if "classification_pk" in cnv.keys():
+            classification_ids.append(cnv["classification_pk"])
             classification = Classification.objects.get(pk=cnv["classification_pk"])
             cnv.update(classification.classification_json)
             cnv["Classification"] = classification.classification_json["classification"]
@@ -942,7 +1127,6 @@ def create_report(request):
     chipsample = ChipSample.objects.get(id=chipsample_pk)
     chip_id = chipsample.chip.chip_id
 
-    print(cnvs)
     if not settings.DEBUG:
         HOST_IP = get_default_gateway_linux()
         MINIO_IP = socket.gethostbyname("minio")
@@ -990,11 +1174,12 @@ def create_report(request):
                                                 -profile docker',
             shell=True,
         )
+        classification_ids = map(str, classification_ids)
         subprocess.run(
             f"ssh canvas@{HOST_IP} 'tsp -f -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
                                     -f /home/canvas/canvas/docker-compose_prod.yaml \
                                     exec canvas \
-                                    python manage.py associate_files --pdf {chip_id} canvas'",
+                                    python manage.py associate_files --pdf {chip_id}  --classification_ids {classification_ids} canvas'",
             shell=True,
         )
 
@@ -1077,7 +1262,6 @@ def get_evidences(cnv, acmg_loss=acmg_loss):
             for evidence in evidences:
                 if cnv.cnv_json["1A-B"] == "0.0" and evidence["name"] == "1A":
                     evidence["score"] = 0.0
-                    evidence["checked"] = "checked"
                 if cnv.cnv_json["1A-B"] == "-0.6" and evidence["name"] == "1B":
                     evidence["score"] = -0.6
                 if cnv.cnv_json["3"] == "0.0" and evidence["name"] == "3A":
