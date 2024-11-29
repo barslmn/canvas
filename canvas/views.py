@@ -1176,12 +1176,16 @@ def create_report(request):
                                                 -profile docker',
             shell=True,
         )
-        classification_ids = map(str, classification_ids)
+        classification_ids_arg = ""
+        if classification_ids:
+            classification_ids_arg = "--classification_ids " + " ".join(
+                map(str, classification_ids)
+            )
         subprocess.run(
             f"ssh canvas@{HOST_IP} 'tsp -f -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
                                     -f /home/canvas/canvas/docker-compose_prod.yaml \
                                     exec canvas \
-                                    python manage.py associate_files --pdf {chip_id}  --classification_ids {classification_ids} canvas'",
+                                    python manage.py associate_files --pdf {chip_id}  {classification_ids_arg} canvas'",
             shell=True,
         )
 
