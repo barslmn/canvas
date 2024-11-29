@@ -49,11 +49,15 @@
     <span id="idat-upload-span"></span>
   </div>
 
-  <ul>
-    {% for group in user.groups.all %}
-      <li>{{ group }}</li>
-    {% endfor %}
-  </ul>
+  <details class="dropdown">
+    <summary>Institutes</summary>
+
+    <ul>
+      {% for group in user.groups.all %}
+        <li>{{ group }}</li>
+      {% endfor %}
+    </ul>
+  </details>
 
   <p>{{ user.username }}</p>
   <!-- Include Logout Form -->

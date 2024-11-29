@@ -745,7 +745,7 @@ def get_chips_for_user(user, chips=None):
         chips = Chip.objects.all()
 
     user_groups = user.groups.all()
-    if user.is_staff:
+    if user.is_staff or user.groups.filter(name="application").exists():
         chips = chips
     else:
         chips = chips.filter(
