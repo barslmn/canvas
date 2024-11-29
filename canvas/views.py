@@ -674,7 +674,7 @@ def start_run(chip_id):
             ss.write(f"sample_id\tprotocol_id\tinstitution\n")
             for cs in ChipSample.objects.filter(chip__chip_id=chip_id):
                 ss.write(
-                    f"{cs.position}\t{cs.sample.protocol_id}\t{cs.sample.institution.name}\n"
+                    f"{chip_id}_{cs.position}\t{cs.sample.protocol_id}\t{cs.sample.institution.name}\n"
                 )
             ss.flush()
             subprocess.run(
@@ -1123,6 +1123,8 @@ def create_report(request):
             cnv.update(classification.classification_json)
             cnv["Classification"] = classification.classification_json["classification"]
             cnv["Total score"] = classification.classification_json["total_score"]
+        else:
+            cnv["Total score"] = cnv["total_score"]
     chipsample_pk = request.POST.get("chipsample_pk")
     chipsample = ChipSample.objects.get(id=chipsample_pk)
     chip_id = chipsample.chip.chip_id
