@@ -68,6 +68,7 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
     data:{{ cnvs|safe }},
     layout:"fitData",
     index:"cnv_pk",
+    movableColumns: true,
     rowContextMenu: rowMenu,
     rowHeader:{width:30, minWidth:30, hozAlign:"center", resizable:false, headerSort:false},
     height:"40vh",
