@@ -1129,7 +1129,8 @@ def create_report(request):
     chipsample = ChipSample.objects.get(id=chipsample_pk)
     chip_id = chipsample.chip.chip_id
     chip_type = chipsample.chip.chip_type.name
-
+    version = get_version()
+    
     if not settings.DEBUG:
         HOST_IP = get_default_gateway_linux()
         MINIO_IP = socket.gethostbyname("minio")
@@ -1173,6 +1174,7 @@ def create_report(request):
                                                 --cnvs {cnv_file.name} \
                                                 --institute "\\"{chipsample.sample.institution.name}\\"" \
                                                 --protocol_id "\\"{chipsample.sample.protocol_id}\\"" \
+                                                --version {version}
                                                 -c {nfc.name} \
                                                 -with-report {chip_id}_{label}.html \
                                                 -profile docker',
