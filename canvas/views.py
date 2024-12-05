@@ -1128,6 +1128,7 @@ def create_report(request):
     chipsample_pk = request.POST.get("chipsample_pk")
     chipsample = ChipSample.objects.get(id=chipsample_pk)
     chip_id = chipsample.chip.chip_id
+    chip_type = chipsample.chip.chip_type.name
 
     if not settings.DEBUG:
         HOST_IP = get_default_gateway_linux()
@@ -1166,11 +1167,12 @@ def create_report(request):
         subprocess.run(
             f'ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
                                                 --chip_id {chip_id} \
+                                                --chip_type {chip_type} \
                                                 --position {chipsample.position} \
                                                 --tex_template canvas-pipeline/template/base_template.tex \
                                                 --cnvs {cnv_file.name} \
-                                                --institute "{chipsample.sample.institution.name}" \
-                                                --protocol_id "{chipsample.sample.protocol_id}" \
+                                                --institute "\\"{chipsample.sample.institution.name}\\"" \
+                                                --protocol_id "\\"{chipsample.sample.protocol_id}\\"" \
                                                 -c {nfc.name} \
                                                 -with-report {chip_id}_{label}.html \
                                                 -profile docker',
