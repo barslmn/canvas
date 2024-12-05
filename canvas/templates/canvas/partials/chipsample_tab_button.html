@@ -2,10 +2,8 @@
   <button
     @click="
         activeTab = {{ chipsample.pk }};
-        igv_browsers['{{ chipsample.pk }}'].then(browser => {
-            setTimeout(() => {
-                browser.visibilityChange(), 50
-            });
+        setTimeout(() => {
+          igv.visibilityChange(), 200
         });
         sampleFormOpen = false;
     "

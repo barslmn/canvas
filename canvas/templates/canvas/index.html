@@ -14,7 +14,9 @@
     >
       <!-- Sidebar -->
       {% include "canvas/sidebar.html" %}
-
+      <div class="gutter-col gutter-col-1">
+        <i class="fa-solid fa-grip-lines-vertical"></i>
+      </div>
       <!-- Main content area -->
       <div>
         <div
@@ -121,7 +123,7 @@
         showSamples() {
           this.views.currentView = "samples";
           this.$nextTick(() => {
-            window.dispatchEvent(new Event("resize"));
+            igv.visibilityChange();
           });
         },
         showAcmgLoss() {
@@ -211,6 +213,15 @@
       if (csrfToken) {
         event.detail.headers["X-CSRFToken"] = csrfToken;
       }
+    });
+
+    Split({
+      columnGutters: [
+        {
+          track: 1,
+          element: document.querySelector(".gutter-col-1"),
+        },
+      ],
     });
   </script>
 {% endblock content %}

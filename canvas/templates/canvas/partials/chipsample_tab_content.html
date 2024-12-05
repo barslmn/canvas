@@ -5,26 +5,56 @@
 >
   {% include 'canvas/components/reports.html' with button="true" %}
 
-  <div id="igv-div-{{ chipsample.pk }}" style="width: 100%"></div>
+  <div class="igv-table">
+    <div id="igv-div-{{ chipsample.pk }}" style="width: 100%;height: 100%"></div>
 
-  <div style="overflow: auto;">
-    {% include 'canvas/partials/cnv_table.html' %}
+    <div class="gutter-row gutter-row-1">
+      <i class="fa-solid fa-grip-lines"></i>
+    </div>
+
+    <div style="overflow: auto;">
+      {% include 'canvas/partials/cnv_table.html' %}
+    </div>
   </div>
 </div>
 
+<style>
+.igv-table {
+    display: grid;
+    grid-template-rows: 1fr 10px 1fr;
+}
+.gutter-row {
+  display: grid;
+  grid-column: 1/-1;
+  cursor: row-resize;
+  justify-items: center;
+  align-items: center;
+}
+.gutter-row-1 {
+    grid-row: 2;
+}
+</style>
+
 <script>
+
+  Split({
+      rowGutters: [{
+          track: 1,
+          element: document.querySelector('.gutter-row-1'),
+      }]
+  })
+
   igv_divs[{{ chipsample.pk }}] = document.getElementById("igv-div-{{ chipsample.pk }}");
 
   igv_options[{{ chipsample.pk }}] = {
       genome: 'hg19',
       tracks: [
-
         {
           name: "CNV LRR",
-          height: 72,
           type: "merged",
           min: -1,
           max: 1,
+          height:200,
           tracks: [
             {
               name: 'CNV LRR',
@@ -49,13 +79,13 @@
               type: 'wig',
               format: 'bedgraph',
               url: '{{ lrr_bedgraph.bedgraph.url }}',
-              height: 200,
               graphType: 'points',
               min: -1,
               max: 1,
               windowFunction: 'mean',
+              color: "rgb(0, 0, 0)",
               guideLines: [
-                  { color: 'blue', dotted: true, y: 0 },
+                  { color: 'gray', dotted: true, y: 0 },
                   ],
               },
             {
@@ -64,21 +94,17 @@
               format: 'bedgraph',
               url: '{{ lrr_smooth_bedgraph.bedgraph.url }}',
               graphType: 'line',
-              windowFunction: 'mean',
               color: "rgb(255, 53, 53)",
               lineWidth: 20,
-              guideLines: [
-                {color: 'blue', dotted: true, y: 0},
-              ],
             },
           ]
         },
         {
           name: "BAF CNV",
-          height: 72,
           type: "merged",
           min: 0,
           max: 1,
+          height:200,
           tracks: [
             {
               name: 'CNV BAF',
@@ -100,9 +126,9 @@
               min: 0,
               max: 1,
               windowFunction: 'none',
-              color: "rgb(53, 53, 53)",
+              color: "rgb(0, 0, 0)",
               guideLines: [
-                {color: 'green', dotted: true, y: 0.5},
+                {color: 'gray', dotted: true, y: 0.5},
               ],
             },
           ]
