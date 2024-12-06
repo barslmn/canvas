@@ -1189,7 +1189,7 @@ def create_report(request):
             f"ssh canvas@{HOST_IP} 'tsp -f -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
                                     -f /home/canvas/canvas/docker-compose_prod.yaml \
                                     exec canvas \
-                                    python manage.py associate_files --pdf {chip_id}  {classification_ids_arg} canvas'",
+                                    python manage.py associate_files --pdf {chip_id} canvas {classification_ids_arg}'",
             shell=True,
         )
 
