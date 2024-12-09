@@ -23,14 +23,13 @@
     type="date"
     name="arrival_date"
     value="{{ arrival_date }}"
-    required
   />
   <input autocomplete="off" type="date" name="study_date" />
   <input autocomplete="off" type="text" name="description" />
   <select name="sex" aria-label="Enter observed sex" required>
     <option selected disabled value="">Enter observed sex…</option>
-    <option value="M" {% if sex == 'Erkek'%} selected {% endif %}>Male</option>
-    <option value="F" {% if sex == 'Kadın'%} selected {% endif %}>Female</option>
+    <option value="M" {% if sex == 'Erkek' %}selected{% endif %}>Male</option>
+    <option value="F" {% if sex == 'Kadın' %}selected{% endif %}>Female</option>
     <option value="U">Unknown</option>
   </select>
 
@@ -40,7 +39,6 @@
     name="concentration"
     min="0"
     step="0.1"
-    required
   />
 
   {% include 'canvas/components/generic_search.html' with model_name="Sample" field_name="protocol_id" isSingleSelect="true" eventName="None" %}
