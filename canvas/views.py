@@ -1255,15 +1255,15 @@ def idat_upload(request):
         return render(request, "canvas/partials/idat_upload_results.html", context)
 
 
-def upload_excel(request):
-    excel_file = request.FILES.get("excel_file")
+def upload_tsv(request):
+    tsv_file = request.FILES.get("tsv_file")
     file_path = "/tmp/uploaded_file.tsv"
     with open(file_path, "wb+") as destination:
-        for chunk in excel_file.chunks():
+        for chunk in tsv_file.chunks():
             destination.write(chunk)
     sample_list = read_sample_from_tsv(file_path)
     context = {"sample_list": sample_list}
-    return render(request, "canvas/partials/samples_from_excel.html", context)
+    return render(request, "canvas/partials/samples_from_tsv.html", context)
 
 
 def get_evidences(cnv, acmg_loss=acmg_loss):
