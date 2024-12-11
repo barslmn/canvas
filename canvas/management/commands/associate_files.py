@@ -272,23 +272,30 @@ class Command(BaseCommand):
             for (
                 bedgraph_path
             ) in bedgraph_paths:  # Iterate over the list of bedgraph paths
-                bedgraph_type = bedgraph_path.split(".")[1].upper()
-                bg, created = BedGraph.objects.get_or_create(
-                    chipsample=chipsample,
-                    bedgraph_type=bedgraph_type,
-                    bedgraph=bedgraph_path,  # Save the MinIO path without downloading
-                )
-                if created:
-                    self.stdout.write(
-                        self.style.SUCCESS(
-                            f"Saved BedGraph {bedgraph_path} to {chipsample}"
-                        )
+                bedgraph_type = bedgraph_path.split(".")[1]
+                if bedgraph_type in dict(
+                    BedGraph.bedgraph_types
+                ):  # Validate against allowed types
+                    bg, created = BedGraph.objects.get_or_create(
+                        chipsample=chipsample,
+                        bedgraph_type=bedgraph_type,
+                        bedgraph=bedgraph_path,  # Save the MinIO path without downloading
                     )
+                    if created:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"Saved BedGraph {bedgraph_path} to {chipsample}"
+                            )
+                        )
+                    else:
+                        self.stdout.write(
+                            self.style.WARNING(
+                                f"BedGraph {bedgraph_path} for {chipsample} already exists."
+                            )
+                        )
                 else:
                     self.stdout.write(
-                        self.style.WARNING(
-                            f"BedGraph {bedgraph_path} for {chipsample} already exists."
-                        )
+                        self.style.ERROR(f"Invalid bedgraph type: {bedgraph_type}")
                     )
 
         # Process quality metrics
