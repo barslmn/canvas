@@ -196,12 +196,14 @@ var chromLengths = {
 
 table.on("rowClick", async function(e, row) {
     var data = row.getData();
-    var padding = Math.round(data.length_info * 0.1);
+
+    var lengthInfo = Math.max(100000, parseInt(data.length_info));
+    var padding = Math.round(lengthInfo * 0.5);
 
     // Calculate start and end with boundary checks
-    var start = Math.max(0, data.Start - padding);
+    var start = Math.max(0, parseInt(data.Start) - padding);
     var chromMaxLength = chromLengths[data.Chromosome] || Infinity; // Use Infinity if chromosome not found
-    var end = Math.min(chromMaxLength, data.End + padding);
+    var end = Math.min(chromMaxLength, parseInt(data.End) + padding);
 
     var locus = data.Chromosome + ":" + start + "-" + end;
 
