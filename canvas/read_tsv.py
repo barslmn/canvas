@@ -69,35 +69,41 @@ def read_sample_from_tsv(file_path):
                     # 'sample_type' not provided
                     sample_type_validated = None
                 # Format 'arrival_date' if it's a datetime object or a valid date string
-                if isinstance(arrival, datetime):
-                    arrival_formatted = arrival.strftime("%Y-%m-%d")
-                elif isinstance(arrival, str):
-                    # If it's already a string, you might want to validate or reformat it
-                    try:
-                        # Attempt to parse and reformat
-                        arrival_dt = datetime.strptime(arrival, "%Y-%m-%d")
-                        arrival_formatted = arrival_dt.strftime("%Y-%m-%d")
-                    except ValueError:
-                        # If parsing fails, keep it as is or handle accordingly
-                        arrival_formatted = arrival
+                if arrival:
+                    if isinstance(arrival, datetime):
+                        arrival_formatted = arrival.strftime("%Y-%m-%d")
+                    elif isinstance(arrival, str):
+                        # If it's already a string, you might want to validate or reformat it
+                        try:
+                            # Attempt to parse and reformat
+                            arrival_dt = datetime.strptime(arrival, "%Y-%m-%d")
+                            arrival_formatted = arrival_dt.strftime("%Y-%m-%d")
+                        except ValueError:
+                            # If parsing fails, keep it as is or handle accordingly
+                            arrival_formatted = arrival
+                    else:
+                        # Handle other possible types (e.g., None)
+                        arrival_formatted = ""
                 else:
-                    # Handle other possible types (e.g., None)
-                    arrival_formatted = ""
+                    arrival_formatted = None
 
-                if isinstance(study, datetime):
-                    study_formatted = study.strftime("%Y-%m-%d")
-                elif isinstance(study, str):
-                    # If it's already a string, you might want to validate or reformat it
-                    try:
-                        # Attempt to parse and reformat
-                        study_dt = datetime.strptime(study, "%Y-%m-%d")
-                        study_formatted = study_dt.strftime("%Y-%m-%d")
-                    except ValueError:
-                        # If parsing fails, keep it as is or handle accordingly
-                        study_formatted = study
+                if study:
+                    if isinstance(study, datetime):
+                        study_formatted = study.strftime("%Y-%m-%d")
+                    elif isinstance(study, str):
+                        # If it's already a string, you might want to validate or reformat it
+                        try:
+                            # Attempt to parse and reformat
+                            study_dt = datetime.strptime(study, "%Y-%m-%d")
+                            study_formatted = study_dt.strftime("%Y-%m-%d")
+                        except ValueError:
+                            # If parsing fails, keep it as is or handle accordingly
+                            study_formatted = study
+                    else:
+                        # Handle other possible types (e.g., None)
+                        study_formatted = ""
                 else:
-                    # Handle other possible types (e.g., None)
-                    arrival_formatted = ""
+                    study_formatted = None
 
                 # Create a dictionary for the current row
                 row_dict = {
