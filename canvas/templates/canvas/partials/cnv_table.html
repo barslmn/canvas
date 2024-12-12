@@ -201,7 +201,7 @@ table.on("rowClick", async function(e, row) {
     var padding = Math.round(lengthInfo * 0.5);
 
     // Calculate start and end with boundary checks
-    var start = Math.max(0, parseInt(data.Start) - padding);
+    var start = Math.max(1, parseInt(data.Start) - padding);
     var chromMaxLength = chromLengths[data.Chromosome] || Infinity; // Use Infinity if chromosome not found
     var end = Math.min(chromMaxLength, parseInt(data.End) + padding);
 

@@ -33,4 +33,5 @@ urlpatterns = [
     path("upload_tsv/", views.upload_tsv, name="upload_tsv"),
     path("get_acmg", views.get_acmg, name="get_acmg"),
     path("save_acmg", views.save_acmg, name="save_acmg"),
+    path("get_cnv_modal", views.get_cnv_modal, name="get_cnv_modal"),
 ]

@@ -1318,3 +1318,15 @@ def save_acmg(request):
             "success": "True",
         }
     return render(request, "canvas/components/variant_modal.html", context)
+
+
+def get_cnv_modal(request):
+    if request.method == "POST":
+        chipsample_pk = request.POST.get("chipsample_pk")
+        chipsample = ChipSample.objects.get(id=chipsample_pk)
+        rois = request.POST.get("rois")
+        context = {
+            "chipsample": chipsample,
+            "rois": rois,
+        }
+    return render(request, "canvas/components/cnv_modal.html", context)

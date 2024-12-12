@@ -1,9 +1,7 @@
-<div
-  id="tab-content-{{ chipsample.pk }}"
-  x-show="activeTab === {{ chipsample.pk }}"
-  x-transition
->
+<div id="tab-content-{{ chipsample.pk }}" x-show="activeTab === {{ chipsample.pk }}" x-transition>
   {% include 'canvas/components/reports.html' with button="true" %}
+  <button @click="get_rois()">Edit CNV</button>
+
 
   <div class="igv-table">
     <div id="igv-div-{{ chipsample.pk }}" style="width: 100%;height: 100%"></div>
@@ -19,42 +17,44 @@
 </div>
 
 <style>
-.igv-table {
+  .igv-table {
     display: grid;
     grid-template-rows: 1fr 10px 1fr;
-}
-.gutter-row {
-  display: grid;
-  grid-column: 1/-1;
-  cursor: row-resize;
-  justify-items: center;
-  align-items: center;
-}
-.gutter-row-1 {
+  }
+
+  .gutter-row {
+    display: grid;
+    grid-column: 1/-1;
+    cursor: row-resize;
+    justify-items: center;
+    align-items: center;
+  }
+
+  .gutter-row-1 {
     grid-row: 2;
-}
+  }
 </style>
 
 <script>
 
   Split({
-      rowGutters: [{
-          track: 1,
-          element: document.querySelector('.gutter-row-1'),
-      }]
+    rowGutters: [{
+      track: 1,
+      element: document.querySelector('.gutter-row-1'),
+    }]
   })
 
   igv_divs[{{ chipsample.pk }}] = document.getElementById("igv-div-{{ chipsample.pk }}");
 
   igv_options[{{ chipsample.pk }}] = {
-      genome: 'hg19',
+    genome: 'hg19',
       tracks: [
         {
           name: "CNV LRR",
           type: "merged",
           min: -1,
           max: 1,
-          height:200,
+          height: 200,
           tracks: [
             {
               name: 'CNV LRR',
@@ -85,9 +85,9 @@
               windowFunction: 'mean',
               color: "rgb(0, 0, 0)",
               guideLines: [
-                  { color: 'gray', dotted: true, y: 0 },
-                  ],
-              },
+                { color: 'gray', dotted: true, y: 0 },
+              ],
+            },
             {
               name: 'LRR smooth',
               type: 'wig',
@@ -104,7 +104,7 @@
           type: "merged",
           min: 0,
           max: 1,
-          height:200,
+          height: 200,
           tracks: [
             {
               name: 'CNV BAF',
@@ -128,16 +128,43 @@
               windowFunction: 'none',
               color: "rgb(0, 0, 0)",
               guideLines: [
-                {color: 'gray', dotted: true, y: 0.5},
+                { color: 'gray', dotted: true, y: 0.5 },
               ],
             },
           ]
         }
-              
-          ]
+
+      ]
   }
   igv_browsers[{{ chipsample.pk }}] = igv.createBrowser(
-      igv_divs[{{ chipsample.pk }}],
-      igv_options[{{ chipsample.pk }}]
+    igv_divs[{{ chipsample.pk }}],
+    igv_options[{{ chipsample.pk }}]
   )
+async function get_rois() {
+    var browser = await igv_browsers[{{ chipsample.pk }}];
+    var rois = await browser.getUserDefinedROIs();
+    console.log(0)
+    if (rois.length > 0) {
+      console.log(1)
+      // Create a form data object for HTMX
+      const data = new FormData();
+      data.append("chipsample_pk", {{ chipsample.pk }});
+      data.append("rois", JSON.stringify(rois));
+      console.log(data)
+
+      // Perform the HTMX POST request
+      htmx.ajax("POST", "{% url 'get_cnv_modal' %}", {
+        target: "#CNVModal",
+        swap: "outerHTML",
+        values: data,
+      });
+      console.log("htmx")
+      showCNVModal = true;
+    } else {
+      console.log(2)
+      alert("Select ROI");
+    }
+  }
+
+
 </script>
