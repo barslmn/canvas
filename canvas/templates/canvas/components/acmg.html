@@ -34,13 +34,16 @@
 }"
   @update-section-score.window="e => { sectionScores[e.detail.section] = e.detail.score; updateTotal(); }"
   {% if cnv %}
-    x-init="$nextTick(() => { total_score = {{ cnv.cnv_json.Total_score }};
+    x-init="$nextTick(() => { total_score = {{ cnv.cnv_json.total_score }};
     classification = '{{ cnv.cnv_json.Classification }}'; })"
   {% endif %}
 >
   <article
     :style="'width:8vw;position:fixed; right:.6em; top:6vh; border-radius:2em; border-style:solid; border-color:' + classificationColor() + '; box-shadow: 0em 0em 0.4em 0em ' + classificationColor() +';'"
   >
+    <header>
+      <strong>Classifying for {{ acmg.type }} </strong>
+    </header>
     <input name="cnv_pk" hidden value="{{ cnv.pk }}" />
     <label for="classification">Classification:</label>
     <input
@@ -68,7 +71,7 @@
     </footer>
   </article>
 
-  {% for section in acmg_loss %}
+  {% for section in acmg.sections %}
     <article
       x-data="{
       selected: null,
