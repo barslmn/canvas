@@ -1198,7 +1198,23 @@ def create_report(request):
         "button": "true",
         "chipsample": chipsample,
     }
-    return render(request, "canvas/partials/report_list.html", context=context)
+    response = render(request, "canvas/partials/report_list.html", context=context)
+    response["HX-Trigger"] = f"triggerReportUpdate{chipsample_pk}"
+    return response
+
+
+def get_report_count(request):
+    chipsample_pk = request.POST.get("chipsample_pk")
+    chipsample = ChipSample.objects.get(id=chipsample_pk)
+    button = request.POST.get("button")
+    return render(
+        request,
+        "canvas/partials/report_summary.html",
+        context={
+            "chipsample": chipsample,
+            "button": button,
+        },
+    )
 
 
 def gather_reports(chipsample):

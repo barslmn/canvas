@@ -12,7 +12,7 @@
     hx-vals='js:{"page": 1, "institutions": getSelectedInstitutions(), "chips": getSelectedChips()}'
   />
 
-  <div class="grid">
+  <div class="grid sample-search">
     {% include 'canvas/components/generic_search.html' with model_name="Institution" field_name="name" label="sample-search" isSingleSelect="false" eventName="searchSamples" %}
     {% include 'canvas/components/generic_search.html' with model_name="Chip" field_name="chip_id" label="sample-search" isSingleSelect="false" eventName="searchSamples" %}
   </div>

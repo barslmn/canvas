@@ -1,13 +1,4 @@
 <details class="dropdown">
-  <summary
-    hx-post="{% url 'get_reports' %}"
-    hx-vals='{"chipsample_pk":"{{ chipsample.pk }}",
-             "button": "{{ button }}"
-             }'
-    hx-target="next ul"
-    hx-swap="outerHTML"
-  >
-    Reports
-  </summary>
+  {% include 'canvas/partials/report_summary.html' %}
   <ul></ul>
 </details>

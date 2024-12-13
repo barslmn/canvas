@@ -27,6 +27,7 @@ urlpatterns = [
     path("save_samples/", views.save_samples, name="save_samples"),
     path("create_report/", views.create_report, name="create_report"),
     path("get_reports/", views.get_reports, name="get_reports"),
+    path("get_report_count/", views.get_report_count, name="get_report_count"),
     path("sample_edit/", views.sample_edit, name="sample_edit"),
     path("chip_edit/", views.chip_edit, name="chip_edit"),
     path("chip_search", views.chip_search, name="chip_search"),
