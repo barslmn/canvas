@@ -1324,7 +1324,11 @@ def get_cnv_modal(request):
     if request.method == "POST":
         chipsample_pk = request.POST.get("chipsample_pk")
         chipsample = ChipSample.objects.get(id=chipsample_pk)
-        rois = request.POST.get("rois")
+        rois = request.POST.get("rois", "[]")
+        try:
+            rois = json.loads(rois)  # Deserialize JSON string into a Python list
+        except json.JSONDecodeError:
+            rois = []
         context = {
             "chipsample": chipsample,
             "rois": rois,
