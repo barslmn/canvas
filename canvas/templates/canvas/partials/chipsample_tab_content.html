@@ -1,9 +1,6 @@
 <div id="tab-content-{{ chipsample.pk }}" x-show="activeTab === {{ chipsample.pk }}" x-transition>
   {% include 'canvas/components/reports.html' with button="true" %}
   
-  <div class="CNVModal_container"
-  </div>
-
   <button @click="get_rois()">Edit CNV</button>
 
 
@@ -161,18 +158,14 @@ async function get_rois() {
     
         // Perform the HTMX POST request
         htmx.ajax("POST", "{% url 'get_cnv_modal' %}", {
-            target: "#CNVModal_container",
+            target: "#CNVModal",
             swap: "outerHTML",
             values: data,
-            trigger: "load"
         });
-          showCNVModal = true;
-    } else {
+        
+        } else {
         console.log(2);
         alert("Select ROI");
     }
 }
-
-
-
 </script>

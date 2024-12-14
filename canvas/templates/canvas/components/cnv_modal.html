@@ -1,39 +1,34 @@
-<dialog id="CNVModal" x-bind:open="showCNVModal">
+<dialog id="CNVModal" x-bind:open="showCNVModal" 
+            {% if showModal %}
+            x-init="showCNVModal=true"
+            {% endif %}>
     <article style="width: 80vw; border-radius: 2em;">
         <header>
 
             {% if success %}
             Successfully saved the CNV.
             {% endif %}
-        <a href="#" style="float:right; transform: translateY(-50%)" aria-label="Close"
-        @click="showCNVModal = false; document.querySelector('#CNVModal').close()">
+        <a
+            href="#"
+            style="float:right; transform: translateY(-50%)"
+            aria-label="Close"
+            @click="showCNVModal = false">
             <i class="fa-solid fa-xmark pico-color-red-500"></i>
         </a>
         
         </header>
+         <ul>
          {% for roi in rois %}
-            {{ roi }}
+            <li>{{ roi }}</li>
             {% endfor %}
+         </ul>
     </article>
 </dialog>
 <style>
     dialog article {
         max-width: unset;
     }
-    dialog.modal {
-        border: none;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        padding: 1em;
-    }
-    dialog[open] {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    dialog.hidden {
-    display: none;
-}
+
 </style>
 
 {% if success %}

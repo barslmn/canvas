@@ -1332,5 +1332,6 @@ def get_cnv_modal(request):
         context = {
             "chipsample": chipsample,
             "rois": rois,
+            "showModal": True,
         }
     return render(request, "canvas/components/cnv_modal.html", context)
