@@ -1324,14 +1324,55 @@ def get_cnv_modal(request):
     if request.method == "POST":
         chipsample_pk = request.POST.get("chipsample_pk")
         chipsample = ChipSample.objects.get(id=chipsample_pk)
+
+        # Parse ROIs from the POST request
         rois = request.POST.get("rois", "[]")
         try:
             rois = json.loads(rois)  # Deserialize JSON string into a Python list
         except json.JSONDecodeError:
             rois = []
+
+        # Prepare ROI ranges (assumes format: "chr:start-end")
+        roi_ranges = []
+        for roi in rois:
+            try:
+                chromosome, positions = roi.split(":")
+                start, end = map(int, positions.split("-"))
+                roi_ranges.append((chromosome, start, end))
+            except ValueError:
+                continue
+
+        # Filter CNVs that intersect with any ROI
+        intersecting_cnvs = []
+        cnvs = CNV.objects.filter(chipsample=chipsample)
+
+        for cnv in cnvs:
+            # Extract chr_info from cnv_json and parse it
+            chr_info = cnv.cnv_json.get("chr_info")
+            if not chr_info:
+                continue
+
+            try:
+                cnv_chromosome, positions = chr_info.split(":")
+                cnv_start, cnv_end = map(int, positions.split("-"))
+            except ValueError:
+                continue
+
+            # Check for intersection with any ROI
+            for roi_chromosome, roi_start, roi_end in roi_ranges:
+                if (
+                    cnv_chromosome == roi_chromosome  # Chromosome matches
+                    and roi_start <= cnv_end  # ROI starts before CNV ends
+                    and roi_end >= cnv_start  # ROI ends after CNV starts
+                ):
+                    intersecting_cnvs.append(cnv)
+                    break  # Avoid duplicates
+
+        # Pass data to the template
         context = {
             "chipsample": chipsample,
             "rois": rois,
+            "intersecting_cnvs": intersecting_cnvs,
             "showModal": True,
         }
-    return render(request, "canvas/components/cnv_modal.html", context)
+        return render(request, "canvas/components/cnv_modal.html", context)

@@ -17,11 +17,25 @@
         </a>
         
         </header>
-         <ul>
-         {% for roi in rois %}
-            <li>{{ roi }}</li>
+        <h3>Regions of Interest (ROIs)</h3>
+        <ul>
+            {% for roi in rois %}
+                <li>{{ roi }}</li>
             {% endfor %}
-         </ul>
+        </ul>
+
+        <h3>Intersecting CNVs</h3>
+        {% if intersecting_cnvs %}
+            <ul>
+                {% for cnv in intersecting_cnvs %}
+                    <li>
+                        {{ cnv.cnv_json.chr_info }}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No intersecting CNVs found.</p>
+        {% endif %}
     </article>
 </dialog>
 <style>
