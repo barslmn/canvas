@@ -14,6 +14,8 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django_htmx.http import retarget
+from django.http import HttpResponse
+import csv
 
 from canvas.models import (
     IDAT,
@@ -1349,3 +1351,76 @@ def save_acmg(request):
             "success": "True",
         }
     return render(request, "canvas/components/variant_modal.html", context)
+
+
+def download_samples(request):
+    # Get the filters from request
+    institutions = request.GET.getlist('institutions[]', [])
+    chips = request.GET.getlist('chips[]', [])
+    query = request.GET.get('search', '').strip().upper()  # Match the search logic from sample_search view
+    
+    # Start with all samples
+    samples = Sample.objects.all()
+    
+    # Apply filters
+    if query:
+        samples = samples.filter(protocol_id__icontains=query)
+    
+    if institutions:
+        samples = samples.filter(institution__name__in=institutions)
+    
+    if chips:
+        samples = samples.filter(chipsample__chip__chip_id__in=chips)
+    
+    # Apply user permissions
+    samples = get_samples_for_user(request.user, samples)
+
+    # Create the HTTP response with CSV file
+    response = HttpResponse(
+        content_type='text/tab-separated-values',
+        headers={'Content-Disposition': 'attachment; filename="samples.tsv"'},
+    )
+
+    # Create the TSV writer
+    writer = csv.writer(response, delimiter='\t')
+    
+    # Write headers
+    writer.writerow(['Sample ID', 'Institution', 'Sample Type', 'Sex', 'Description', 'Arrival Date', 'Study Date', 'Concentration', 'Chip', 'Position', 'Scan Date', 'Call Rate', 'Autosomal Call Rate', 'LRR StdDev', 'Sex Estimate'])
+    
+    # Write data rows
+    for sample in samples:
+        chipsamples = sample.chipsample.all()
+        if chipsamples:
+            for cs in chipsamples:
+                writer.writerow([
+                    sample.protocol_id,
+                    sample.institution.name,
+                    sample.sample_type.name,
+                    sample.sex,
+                    sample.description,
+                    sample.arrival_date,
+                    sample.study_date,
+                    sample.concentration,
+                    cs.chip.chip_id if cs.chip else '',
+                    cs.position if cs else '',
+                    cs.chip.scan_date if cs.chip else '',
+                    f"{cs.call_rate:.2%}" if cs.call_rate else '',
+                    f"{cs.autosomal_call_rate:.2%}" if cs.autosomal_call_rate else '',
+                    f"{cs.lrr_std_dev:.4f}" if cs.lrr_std_dev else '',
+                    cs.sex_estimate if cs else ''
+                ])
+        else:
+            # Write sample info even if no chipsamples exist
+            writer.writerow([
+                sample.protocol_id,
+                sample.institution.name,
+                sample.sample_type.name,
+                sample.sex,
+                sample.description,
+                sample.arrival_date,
+                sample.study_date,
+                sample.concentration,
+                '', '', '', '', '', '', ''  # Empty values for chip-related fields
+            ])
+
+    return response

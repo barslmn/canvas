@@ -34,4 +34,5 @@ urlpatterns = [
     path("upload_tsv/", views.upload_tsv, name="upload_tsv"),
     path("get_acmg", views.get_acmg, name="get_acmg"),
     path("save_acmg", views.save_acmg, name="save_acmg"),
+    path('download_samples/', views.download_samples, name='download_samples'),
 ]

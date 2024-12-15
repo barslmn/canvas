@@ -1,10 +1,23 @@
 {% if samples.number == 1 %}
-  <div
-    class="badge"
-    :class="{'pico-background-green-400': {{ len_samples }} > 0,
-                'pico-background-red-500': {{ len_samples }} == 0}"
-  >
-    Found {{ len_samples }} samples.
+  <div style="display: flex; align-items: center; gap: 1rem;">
+    <div
+      class="badge"
+      :class="{'pico-background-green-400': {{ len_samples }} > 0,
+                  'pico-background-red-500': {{ len_samples }} == 0}"
+    >
+      Found {{ len_samples }} samples.
+    </div>
+    <a
+      class="outline button"
+      style="margin: 0; padding: 0.2rem 0.5rem; margin-left: auto;"
+      href="{% url 'download_samples' %}"
+      onclick="this.href = this.href + 
+          '?institutions=' + encodeURIComponent(JSON.stringify(getSelectedInstitutions())) + 
+          '&chips=' + encodeURIComponent(JSON.stringify(getSelectedChips())) +
+          '&search=' + encodeURIComponent(document.getElementById('sample-search').value)"
+    >
+      <i class="fa-solid fa-download"></i> Download TSV
+    </a>
   </div>
 {% endif %}
 {% for sample in samples %}
