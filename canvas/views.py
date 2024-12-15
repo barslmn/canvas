@@ -1349,3 +1349,35 @@ def save_acmg(request):
             "success": "True",
         }
     return render(request, "canvas/components/variant_modal.html", context)
+
+
+@login_required
+def match_chip_samples(request):
+    if request.method == "POST":
+        chip_pk = request.POST.get("chip_pk")
+        pasted_data = json.loads(request.POST.get("pasted_data"))
+        chip = Chip.objects.get(id=chip_pk)
+
+        # Process pasted data and find matches
+        matches = {}
+        for row in pasted_data:
+            if len(row) >= 3:  # Ensure row has chip_id, position, protocol_id
+                chip_id = row[0].strip()
+                position = row[1].strip()
+                protocol_id = row[2].strip()
+
+                # Only process if chip_id matches
+                if chip_id == chip.chip_id:
+                    # Try to find matching sample
+                    sample = Sample.objects.filter(
+                        protocol_id__icontains=protocol_id
+                    ).first()
+                    if sample:
+                        matches[position] = sample
+
+        print(matches)
+        return render(
+            request,
+            "canvas/partials/chip_edit.html",
+            {"chip": chip, "matches": matches},
+        )

@@ -1,6 +1,6 @@
 {% load sortedchip %}
 
-<form>
+<form id="chip-edit-form-{{ chip.pk }}" data-chip-id="{{ chip.chip_id }}">
   <article
     style="border-style: solid;
   border-radius: 2em;
@@ -12,6 +12,11 @@
       <span class="badge pico-background-orange-400"
         >Editing
         <i class="fa-solid fa-pencil"></i>
+      </span>
+
+      <span class="htmx-indicator">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        Matching samples...
       </span>
 
       <nav style="float:right; transform:translateY(-25%);">
@@ -43,7 +48,7 @@
     </header>
 
     <p>{{ chip.chip_type }}</p>
-    {% sortedchip chip as chipsample_rows %}
+    {% sortedchip chip matches=matches as chipsample_rows %}
     {% for chipsample_row in chipsample_rows %}
       <div class="grid">
         {% for chipsample in chipsample_row %}
@@ -68,4 +73,110 @@
       </div>
     {% endfor %}
   </article>
+
+<script>
+// Define handler only if it doesn't exist yet
+if (!window.pasteHandler) {
+    // Prevent context menu while editing
+    document.addEventListener('contextmenu', function(e) {
+        if (document.getElementById('chip-edit-form-{{ chip.pk }}')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    window.pasteHandler = function(e) {
+        if (e.ctrlKey && e.key === 'v' && document.getElementById('chip-edit-form-{{ chip.pk }}')) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Paste detected');
+            navigator.clipboard.readText()
+                .then(text => {
+                    const rows = text.trim().split('\n').map(row => row.split('\t'));
+                    
+                    // Validate data format
+                    const errors = [];
+                    
+                    // Check if there's any data
+                    if (rows.length === 0) {
+                        errors.push("No data was pasted");
+                    }
+
+                    // Check each row format
+                    rows.forEach((row, index) => {
+                        if (row.length < 3) {
+                            errors.push(`Row ${index + 1}: Missing columns. Expected: chip_id, position, protocol_id`);
+                        }
+                        if (row[0] && !row[0].match(/^\d+$/)) {
+                            errors.push(`Row ${index + 1}: Invalid chip ID format. Expected: numbers only`);
+                        }
+                        if (row[1] && !row[1].match(/^R\d{2}C\d{2}$/)) {
+                            errors.push(`Row ${index + 1}: Invalid position format. Expected: R##C##`);
+                        }
+                    });
+
+                    if (errors.length > 0) {
+                        alert("Invalid data format:\n\n" + errors.join("\n"));
+                        return;
+                    }
+
+                    console.log('Sending data to server');
+                    
+                    // Find all unique chip IDs in the pasted data
+                    const chipIds = new Set(rows.map(row => row[0].trim()));
+                    console.log('Found chip IDs:', chipIds);
+                    
+                    // For each chip ID found in the pasted data
+                    chipIds.forEach(chipId => {
+                        // Find the form for this chip if it exists
+                        const targetForm = document.querySelector(`form[id^="chip-edit-form-"][data-chip-id="${chipId}"]`);
+                        console.log(`Looking for chip ${chipId}:`, targetForm);
+                        if (targetForm) {
+                            const chipPk = targetForm.id.split('-').pop();
+                            console.log(`Updating chip ${chipId} with pk ${chipPk}`);
+                            htmx.ajax('POST', '{% url "match_chip_samples" %}', {
+                                target: targetForm.closest('div'),
+                                swap: 'innerHTML swap:200ms',
+                                values: {
+                                    'chip_pk': chipPk,
+                                    'pasted_data': JSON.stringify(rows)
+                                }
+                            });
+                        }
+                    });
+                });
+        }
+    };
+}
+
+// Add the listener when the form is present
+if (document.getElementById('chip-edit-form-{{ chip.pk }}')) {
+    console.log('Initial listener added');
+    document.addEventListener('keydown', window.pasteHandler);
+    
+    // Remove the listener when the form is replaced or removed
+    htmx.on('htmx:beforeSwap', function(evt) {
+        console.log('Removing listener before swap');
+        document.removeEventListener('keydown', window.pasteHandler);
+    });
+
+    // Re-add the listener after new content is swapped in
+    htmx.on('htmx:afterSwap', function(evt) {
+        if (document.getElementById('chip-edit-form-{{ chip.pk }}')) {
+            console.log('Re-adding listener after swap');
+            document.addEventListener('keydown', window.pasteHandler);
+        }
+    });
+}
+</script>
+
+<style>
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator {
+    display: inline;
+}
+</style>
+
 </form>
