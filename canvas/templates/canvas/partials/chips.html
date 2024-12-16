@@ -1,11 +1,56 @@
+<style>
+    .vertical-text {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        padding: 10px;
+        color: #666;
+        height: fit-content;
+        align-self: flex-start;
+    }
+
+    .start-marker {
+        float: left;
+        margin-right: 10px;
+        position: sticky;
+        top: 0;
+    }
+
+    .end-marker {
+        float: right;
+        margin-left: 10px;
+        position: sticky;
+        top: 0;
+    }
+</style>
+
+{% if chips.number == 1 %}
+    <div class="vertical-text start-marker">
+        <div class="badge" :class="{'pico-background-green-400': {{ len_chips }} > 0, 'pico-background-red-500': {{ len_chips }} == 0}">
+            found {{ len_chips }} chips
+        </div>
+    </div>
+{% endif %}
+
 {% for chip in chips %}
   <div
     {% if forloop.last and chips.has_next %}
-      hx-get="{% url 'chip_search' %}" hx-trigger="intersect once"
-      hx-swap="afterend swap:500ms" hx-target="this" hx-vals='js:{"page":
-      "{{ chips.next_page_number }}", "search": "{{ query }}"}'
+      hx-get="{% url 'chip_search' %}" 
+      hx-trigger="intersect once"
+      hx-swap="afterend swap:500ms" 
+      hx-target="this" 
+      hx-vals='js:{"page": "{{ chips.next_page_number }}", "search": "{{ query }}"}'
     {% endif %}
   >
     {% include 'canvas/partials/chip.html' with chip=chip %}
   </div>
 {% endfor %}
+
+{% if not chips.has_next %}
+    {% if len_chips != 0 %}
+        <div class="vertical-text end-marker">
+            <div class="badge pico-background-orange-300">
+                no more chips
+            </div>
+        </div>
+    {% endif %}
+{% endif %}
