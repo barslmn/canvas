@@ -1362,44 +1362,96 @@ def save_acmg(request):
 
 def download_samples(request):
     # Get the filters from request
-    institutions = request.GET.getlist('institutions[]', [])
-    chips = request.GET.getlist('chips[]', [])
-    query = request.GET.get('search', '').strip().upper()  # Match the search logic from sample_search view
-    
+    try:
+        # Decode JSON strings into Python lists
+        institutions = json.loads(request.GET.get("institutions", "[]"))
+        chips = json.loads(request.GET.get("chips", "[]"))
+    except json.JSONDecodeError:
+        institutions = []
+        chips = []
+
+    query = (
+        request.GET.get("search", "").strip().upper()
+    )  # Match the search logic from sample_search view
+
     # Start with all samples
     samples = Sample.objects.all()
-    
+
     # Apply filters
     if query:
         samples = samples.filter(protocol_id__icontains=query)
-    
+
     if institutions:
         samples = samples.filter(institution__name__in=institutions)
-    
+
     if chips:
         samples = samples.filter(chipsample__chip__chip_id__in=chips)
-    
+
     # Apply user permissions
     samples = get_samples_for_user(request.user, samples)
 
     # Create the HTTP response with CSV file
     response = HttpResponse(
-        content_type='text/tab-separated-values',
-        headers={'Content-Disposition': 'attachment; filename="samples.tsv"'},
+        content_type="text/tab-separated-values",
+        headers={"Content-Disposition": 'attachment; filename="samples.tsv"'},
     )
 
     # Create the TSV writer
-    writer = csv.writer(response, delimiter='\t')
-    
+    writer = csv.writer(response, delimiter="\t")
+
     # Write headers
-    writer.writerow(['Sample ID', 'Institution', 'Sample Type', 'Sex', 'Description', 'Arrival Date', 'Study Date', 'Concentration', 'Chip', 'Position', 'Scan Date', 'Call Rate', 'Autosomal Call Rate', 'LRR StdDev', 'Sex Estimate'])
-    
+    writer.writerow(
+        [
+            "Sample ID",
+            "Institution",
+            "Sample Type",
+            "Sex",
+            "Description",
+            "Arrival Date",
+            "Study Date",
+            "Concentration",
+            "Chip",
+            "Position",
+            "Scan Date",
+            "Call Rate",
+            "Autosomal Call Rate",
+            "LRR StdDev",
+            "Sex Estimate",
+        ]
+    )
+
     # Write data rows
     for sample in samples:
         chipsamples = sample.chipsample.all()
         if chipsamples:
             for cs in chipsamples:
-                writer.writerow([
+                writer.writerow(
+                    [
+                        sample.protocol_id,
+                        sample.institution.name,
+                        sample.sample_type.name,
+                        sample.sex,
+                        sample.description,
+                        sample.arrival_date,
+                        sample.study_date,
+                        sample.concentration,
+                        cs.chip.chip_id if cs.chip else "",
+                        cs.position if cs else "",
+                        cs.chip.scan_date if cs.chip else "",
+                        f"{cs.call_rate:.2%}" if cs.call_rate else "",
+                        (
+                            f"{cs.autosomal_call_rate:.2%}"
+                            if cs.autosomal_call_rate
+                            else ""
+                        ),
+                        f"{cs.lrr_std_dev:.4f}" if cs.lrr_std_dev else "",
+                        cs.sex_estimate if cs else "",
+                    ]
+                )
+        else:
+            # Write sample info even if no chipsamples exist
+            writer.writerow(
+                [
                     sample.protocol_id,
                     sample.institution.name,
                     sample.sample_type.name,
@@ -1408,29 +1460,18 @@ def download_samples(request):
                     sample.arrival_date,
                     sample.study_date,
                     sample.concentration,
-                    cs.chip.chip_id if cs.chip else '',
-                    cs.position if cs else '',
-                    cs.chip.scan_date if cs.chip else '',
-                    f"{cs.call_rate:.2%}" if cs.call_rate else '',
-                    f"{cs.autosomal_call_rate:.2%}" if cs.autosomal_call_rate else '',
-                    f"{cs.lrr_std_dev:.4f}" if cs.lrr_std_dev else '',
-                    cs.sex_estimate if cs else ''
-                ])
-        else:
-            # Write sample info even if no chipsamples exist
-            writer.writerow([
-                sample.protocol_id,
-                sample.institution.name,
-                sample.sample_type.name,
-                sample.sex,
-                sample.description,
-                sample.arrival_date,
-                sample.study_date,
-                sample.concentration,
-                '', '', '', '', '', '', ''  # Empty values for chip-related fields
-            ])
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",  # Empty values for chip-related fields
+                ]
+            )
 
     return response
+
 
 @login_required
 def match_chip_samples(request):
@@ -1466,77 +1507,87 @@ def match_chip_samples(request):
 
 def create_zip_response(files, filename):
     zip_buffer = BytesIO()
-    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         for file_obj in files:
             file_name = os.path.basename(file_obj.name)
             zip_file.writestr(file_name, file_obj.read())
     zip_buffer.seek(0)
-    response = FileResponse(zip_buffer, content_type='application/zip')
-    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response = FileResponse(zip_buffer, content_type="application/zip")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
 
 @login_required
 def download_chip_files(request, chip_id, file_type):
     # Validate file_type
-    valid_types = ['idats', 'gtcs', 'vcfs', 'bedgraphs', 'reports', 'all']
+    valid_types = ["idats", "gtcs", "vcfs", "bedgraphs", "reports", "all"]
     if file_type not in valid_types:
         raise Http404(f"Invalid file type: {file_type}")
-    
+
     chip = get_object_or_404(Chip, id=chip_id)
     files = []
-    
+
     for chipsample in chip.chipsample.all():
         # Check permissions
-        if chipsample.sample and not request.user.groups.filter(institutions=chipsample.sample.institution).exists():
+        if (
+            chipsample.sample
+            and not request.user.groups.filter(
+                institutions=chipsample.sample.institution
+            ).exists()
+        ):
             continue
-            
+
         # Get requested files based on file_type
-        if file_type == 'idats' or file_type == 'all':
+        if file_type == "idats" or file_type == "all":
             files.extend([idat.idat for idat in chipsample.idat_set.all()])
-        if file_type == 'gtcs' or file_type == 'all':
+        if file_type == "gtcs" or file_type == "all":
             files.extend([gtc.gtc for gtc in chipsample.gtc_set.all()])
-        if file_type == 'vcfs' or file_type == 'all':
+        if file_type == "vcfs" or file_type == "all":
             files.extend([vcf.vcf for vcf in chipsample.vcf_set.all()])
-        if file_type == 'bedgraphs' or file_type == 'all':
+        if file_type == "bedgraphs" or file_type == "all":
             files.extend([bg.bedgraph for bg in chipsample.bedgraph.all()])
-        if file_type == 'reports' or file_type == 'all':
+        if file_type == "reports" or file_type == "all":
             files.extend([report.report for report in chipsample.report.all()])
-    
+
     if not files:
         return HttpResponseForbidden(f"No accessible {file_type} files found")
-    
-    return create_zip_response(files, f'{chip.chip_id}_{file_type}.zip')
+
+    return create_zip_response(files, f"{chip.chip_id}_{file_type}.zip")
+
 
 @login_required
 def download_chipsample_files(request, chipsample_id, file_type):
     # Validate file_type
-    valid_types = ['idats', 'gtcs', 'vcfs', 'bedgraphs', 'reports', 'all']
+    valid_types = ["idats", "gtcs", "vcfs", "bedgraphs", "reports", "all"]
     if file_type not in valid_types:
         raise Http404(f"Invalid file type: {file_type}")
-    
+
     chipsample = get_object_or_404(ChipSample, id=chipsample_id)
-    
+
     # Check permissions
-    if chipsample.sample and not request.user.groups.filter(institutions=chipsample.sample.institution).exists():
+    if (
+        chipsample.sample
+        and not request.user.groups.filter(
+            institutions=chipsample.sample.institution
+        ).exists()
+    ):
         return HttpResponseForbidden("No permission to access these files")
-    
+
     files = []
-    
+
     # Get requested files based on file_type
-    if file_type == 'idats' or file_type == 'all':
+    if file_type == "idats" or file_type == "all":
         files.extend([idat.idat for idat in chipsample.idat_set.all()])
-    if file_type == 'gtcs' or file_type == 'all':
+    if file_type == "gtcs" or file_type == "all":
         files.extend([gtc.gtc for gtc in chipsample.gtc_set.all()])
-    if file_type == 'vcfs' or file_type == 'all':
+    if file_type == "vcfs" or file_type == "all":
         files.extend([vcf.vcf for vcf in chipsample.vcf_set.all()])
-    if file_type == 'bedgraphs' or file_type == 'all':
+    if file_type == "bedgraphs" or file_type == "all":
         files.extend([bg.bedgraph for bg in chipsample.bedgraph.all()])
-    if file_type == 'reports' or file_type == 'all':
+    if file_type == "reports" or file_type == "all":
         files.extend([report.report for report in chipsample.report.all()])
-    
+
     if not files:
         return HttpResponseForbidden(f"No accessible {file_type} files found")
-    
-    return create_zip_response(files, f'chipsample_{chipsample_id}_{file_type}.zip')
 
-
+    return create_zip_response(files, f"chipsample_{chipsample_id}_{file_type}.zip")
