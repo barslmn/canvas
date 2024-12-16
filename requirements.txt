@@ -1,5 +1,5 @@
 gunicorn[gevent]==23.0.0
-Django==5.0.7
+Django==5.1.4
 django-allauth==0.63.3
 django-cleanup==8.1.0
 django-extensions==3.2.3
