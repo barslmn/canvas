@@ -16,6 +16,13 @@ from django.utils.dateparse import parse_date
 from django_htmx.http import retarget
 from django.http import HttpResponse
 import csv
+from django.http import FileResponse, HttpResponseForbidden, Http404, HttpResponse
+from django.shortcuts import get_object_or_404
+import zipfile
+from io import BytesIO
+import os
+from wsgiref.util import FileWrapper
+from minio import Minio
 
 from canvas.models import (
     IDAT,
@@ -1424,3 +1431,112 @@ def download_samples(request):
             ])
 
     return response
+
+@login_required
+def match_chip_samples(request):
+    if request.method == "POST":
+        chip_pk = request.POST.get("chip_pk")
+        pasted_data = json.loads(request.POST.get("pasted_data"))
+        chip = Chip.objects.get(id=chip_pk)
+
+        # Process pasted data and find matches
+        matches = {}
+        for row in pasted_data:
+            if len(row) >= 3:  # Ensure row has chip_id, position, protocol_id
+                chip_id = row[0].strip()
+                position = row[1].strip()
+                protocol_id = row[2].strip()
+
+                # Only process if chip_id matches
+                if chip_id == chip.chip_id:
+                    # Try to find matching sample
+                    sample = Sample.objects.filter(
+                        protocol_id__icontains=protocol_id
+                    ).first()
+                    if sample:
+                        matches[position] = sample
+
+        print(matches)
+        return render(
+            request,
+            "canvas/partials/chip_edit.html",
+            {"chip": chip, "matches": matches},
+        )
+
+
+def create_zip_response(files, filename):
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for file_obj in files:
+            file_name = os.path.basename(file_obj.name)
+            zip_file.writestr(file_name, file_obj.read())
+    zip_buffer.seek(0)
+    response = FileResponse(zip_buffer, content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+@login_required
+def download_chip_files(request, chip_id, file_type):
+    # Validate file_type
+    valid_types = ['idats', 'gtcs', 'vcfs', 'bedgraphs', 'reports', 'all']
+    if file_type not in valid_types:
+        raise Http404(f"Invalid file type: {file_type}")
+    
+    chip = get_object_or_404(Chip, id=chip_id)
+    files = []
+    
+    for chipsample in chip.chipsample.all():
+        # Check permissions
+        if chipsample.sample and not request.user.groups.filter(institutions=chipsample.sample.institution).exists():
+            continue
+            
+        # Get requested files based on file_type
+        if file_type == 'idats' or file_type == 'all':
+            files.extend([idat.idat for idat in chipsample.idat_set.all()])
+        if file_type == 'gtcs' or file_type == 'all':
+            files.extend([gtc.gtc for gtc in chipsample.gtc_set.all()])
+        if file_type == 'vcfs' or file_type == 'all':
+            files.extend([vcf.vcf for vcf in chipsample.vcf_set.all()])
+        if file_type == 'bedgraphs' or file_type == 'all':
+            files.extend([bg.bedgraph for bg in chipsample.bedgraph.all()])
+        if file_type == 'reports' or file_type == 'all':
+            files.extend([report.report for report in chipsample.report.all()])
+    
+    if not files:
+        return HttpResponseForbidden(f"No accessible {file_type} files found")
+    
+    return create_zip_response(files, f'{chip.chip_id}_{file_type}.zip')
+
+@login_required
+def download_chipsample_files(request, chipsample_id, file_type):
+    # Validate file_type
+    valid_types = ['idats', 'gtcs', 'vcfs', 'bedgraphs', 'reports', 'all']
+    if file_type not in valid_types:
+        raise Http404(f"Invalid file type: {file_type}")
+    
+    chipsample = get_object_or_404(ChipSample, id=chipsample_id)
+    
+    # Check permissions
+    if chipsample.sample and not request.user.groups.filter(institutions=chipsample.sample.institution).exists():
+        return HttpResponseForbidden("No permission to access these files")
+    
+    files = []
+    
+    # Get requested files based on file_type
+    if file_type == 'idats' or file_type == 'all':
+        files.extend([idat.idat for idat in chipsample.idat_set.all()])
+    if file_type == 'gtcs' or file_type == 'all':
+        files.extend([gtc.gtc for gtc in chipsample.gtc_set.all()])
+    if file_type == 'vcfs' or file_type == 'all':
+        files.extend([vcf.vcf for vcf in chipsample.vcf_set.all()])
+    if file_type == 'bedgraphs' or file_type == 'all':
+        files.extend([bg.bedgraph for bg in chipsample.bedgraph.all()])
+    if file_type == 'reports' or file_type == 'all':
+        files.extend([report.report for report in chipsample.report.all()])
+    
+    if not files:
+        return HttpResponseForbidden(f"No accessible {file_type} files found")
+    
+    return create_zip_response(files, f'chipsample_{chipsample_id}_{file_type}.zip')
+
+

@@ -35,4 +35,10 @@ urlpatterns = [
     path("get_acmg", views.get_acmg, name="get_acmg"),
     path("save_acmg", views.save_acmg, name="save_acmg"),
     path('download_samples/', views.download_samples, name='download_samples'),
+    path('match_chip_samples/', views.match_chip_samples, name='match_chip_samples'),
+    # Chip download URLs
+    path('download/chip/<int:chip_id>/<str:file_type>/', views.download_chip_files, name='download_chip_files'),
+    path('download/chipsample/<int:chipsample_id>/<str:file_type>/', 
+         views.download_chipsample_files, 
+         name='download_chipsample_files'),
 ]
