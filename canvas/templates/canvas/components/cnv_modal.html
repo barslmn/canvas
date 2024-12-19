@@ -21,8 +21,7 @@
                     {% if roi_cnvs %}
                         {% for cnv in roi_cnvs %}
                         <div class="cnv-item">
-                            <input type="checkbox" id="cnv-{{ roi|slugify }}-{{ forloop.counter }}">
-                            <label for="cnv-{{ roi|slugify }}-{{ forloop.counter }}">{{ cnv.cnv_json.chr_info }}</label>
+                            {{ cnv.cnv_json.chr_info }}
                         </div>
                         {% endfor %}
                     {% else %}
