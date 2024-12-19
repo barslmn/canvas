@@ -1328,26 +1328,28 @@ def get_cnv_modal(request):
         # Parse ROIs from the POST request
         rois = request.POST.get("rois", "[]")
         try:
-            rois = json.loads(rois)  # Deserialize JSON string into a Python list
+            rois = json.loads(rois)
         except json.JSONDecodeError:
             rois = []
 
-        # Prepare ROI ranges (assumes format: "chr:start-end")
-        roi_ranges = []
+        # Initialize dictionary to store CNVs by ROI
+        intersecting_cnvs_by_roi = {roi: [] for roi in rois}
+
+        # Prepare ROI ranges
+        roi_ranges = {}
         for roi in rois:
             try:
                 chromosome, positions = roi.split(":")
                 start, end = map(int, positions.split("-"))
-                roi_ranges.append((chromosome, start, end))
+                roi_ranges[roi] = (chromosome, start, end)
             except ValueError:
                 continue
 
-        # Filter CNVs that intersect with any ROI
-        intersecting_cnvs = []
+        # Get all CNVs for this chipsample
         cnvs = CNV.objects.filter(chipsample=chipsample)
 
+        # Check each CNV against each ROI
         for cnv in cnvs:
-            # Extract chr_info from cnv_json and parse it
             chr_info = cnv.cnv_json.get("chr_info")
             if not chr_info:
                 continue
@@ -1358,21 +1360,74 @@ def get_cnv_modal(request):
             except ValueError:
                 continue
 
-            # Check for intersection with any ROI
-            for roi_chromosome, roi_start, roi_end in roi_ranges:
+            # Check intersection with each ROI
+            for roi, (roi_chromosome, roi_start, roi_end) in roi_ranges.items():
                 if (
-                    cnv_chromosome == roi_chromosome  # Chromosome matches
-                    and roi_start <= cnv_end  # ROI starts before CNV ends
-                    and roi_end >= cnv_start  # ROI ends after CNV starts
+                    cnv_chromosome == roi_chromosome
+                    and roi_start <= cnv_end
+                    and roi_end >= cnv_start
                 ):
-                    intersecting_cnvs.append(cnv)
-                    break  # Avoid duplicates
+                    intersecting_cnvs_by_roi[roi].append(cnv)
 
-        # Pass data to the template
         context = {
             "chipsample": chipsample,
             "rois": rois,
-            "intersecting_cnvs": intersecting_cnvs,
+            "intersecting_cnvs_by_roi": intersecting_cnvs_by_roi,
             "showModal": True,
         }
         return render(request, "canvas/components/cnv_modal.html", context)
+
+
+@login_required
+def cnv_edit(request):
+    if request.method == "POST":
+        roi = request.POST.get("roi")
+        chipsample_pk = request.POST.get("chipsample_pk")
+        
+        try:
+            # Parse the ROI string (format: "chr:start-end")
+            chromosome, positions = roi.split(":")
+            start, end = map(int, positions.split("-"))
+            
+            # Create variant ID in format chr_start_end
+            variant_id = f"{chromosome}_{start}_{end}"
+            
+            # Get the chipsample
+            chipsample = ChipSample.objects.get(pk=chipsample_pk)
+            
+            # Create new CNV
+            cnv_json = {
+                "chr_info": roi,  # Using full ROI string as chr_info
+                "chromosome": chromosome,
+                "start": start,
+                "end": end,
+                "type": "ROI",
+                "Total score": 0,
+                "VariantID": variant_id
+            }
+            
+            # Save to database with variant_id
+            cnv = CNV.objects.create(
+                chipsample=chipsample,
+                cnv_json=cnv_json,
+                variant_id=variant_id  # Adding variant_id to the model
+            )
+            
+            return render(
+                request,
+                "canvas/partials/cnv_edit_success.html",
+                {
+                    "success": True,
+                    "message": f"Successfully created new CNV: {variant_id}"
+                }
+            )
+            
+        except (ValueError, ChipSample.DoesNotExist) as e:
+            return render(
+                request,
+                "canvas/partials/cnv_edit_success.html",
+                {
+                    "success": False,
+                    "message": f"Error creating CNV: {str(e)}"
+                }
+            )

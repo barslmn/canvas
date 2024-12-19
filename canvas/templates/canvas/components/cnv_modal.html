@@ -4,53 +4,79 @@
             {% endif %}>
     <article style="width: 80vw; border-radius: 2em;">
         <header>
-
             {% if success %}
             Successfully saved the CNV.
             {% endif %}
-        <a
-            href="#"
-            style="float:right; transform: translateY(-50%)"
-            aria-label="Close"
-            @click="showCNVModal = false">
-            <i class="fa-solid fa-xmark pico-color-red-500"></i>
-        </a>
-        
+            <a href="#" style="float:right; transform: translateY(-50%)" aria-label="Close" @click="showCNVModal = false">
+                <i class="fa-solid fa-xmark pico-color-red-500"></i>
+            </a>
         </header>
-        <h3>Regions of Interest (ROIs)</h3>
-        <ul>
-            {% for roi in rois %}
-                <li>{{ roi }}</li>
-            {% endfor %}
-        </ul>
 
-        <h3>Intersecting CNVs</h3>
-        {% if intersecting_cnvs %}
-            <ul>
-                {% for cnv in intersecting_cnvs %}
-                    <li>
-                        {{ cnv.cnv_json.chr_info }}
-                    </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p>No intersecting CNVs found.</p>
-        {% endif %}
+        {% for roi, roi_cnvs in intersecting_cnvs_by_roi.items %}
+        <div class="roi-section">
+            <h3>{{ roi }}</h3>
+            <div class="roi-content">
+                <div class="cnv-list">
+                    <h4>Intersecting CNVs:</h4>
+                    {% if roi_cnvs %}
+                        {% for cnv in roi_cnvs %}
+                        <div class="cnv-item">
+                            <input type="checkbox" id="cnv-{{ roi|slugify }}-{{ forloop.counter }}">
+                            <label for="cnv-{{ roi|slugify }}-{{ forloop.counter }}">{{ cnv.cnv_json.chr_info }}</label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-cnv-message">No intersecting CNVs found for this ROI</div>
+                    {% endif %}
+                </div>
+                <button class="add-cnv-btn" 
+                        hx-post="{% url 'cnv_edit' %}"
+                        hx-vals='{
+                            "roi": "{{ roi }}",
+                            "chipsample_pk": "{{ chipsample.pk }}"
+                        }'
+                        hx-target="#cnv-edit-result">
+                    Add New CNV
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div id="cnv-edit-result"></div>
     </article>
 </dialog>
+
 <style>
     dialog article {
         max-width: unset;
     }
-
+    .roi-section {
+        background-color: #f5f5f5;
+        border-radius: 10px;
+        padding: 1em;
+        margin-bottom: 1em;
+    }
+    .roi-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .cnv-list {
+        flex-grow: 1;
+    }
+    .cnv-item {
+        margin: 0.5em 0;
+    }
+    .add-cnv-btn {
+        background-color: #a8d5ff;
+        border: none;
+        border-radius: 5px;
+        padding: 0.5em 1em;
+        color: black;
+        cursor: pointer;
+    }
 </style>
 
-{% if success %}
-<script>
-    table.addData([
-        {{ cnv }}
-    ], true);
-</script>
-{% endif %}
+
 
 
