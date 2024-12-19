@@ -1381,53 +1381,124 @@ def get_cnv_modal(request):
 @login_required
 def cnv_edit(request):
     if request.method == "POST":
-        roi = request.POST.get("roi")
         chipsample_pk = request.POST.get("chipsample_pk")
+        roi = request.POST.get("roi")  # Format: chr:start-end
+        cnv_type = request.POST.get("type", "deletion")
+        snap_probes = request.POST.get("snap_probes", "true").lower() == "true"
         
         try:
-            # Parse the ROI string (format: "chr:start-end")
+            # Parse ROI
             chromosome, positions = roi.split(":")
             start, end = map(int, positions.split("-"))
             
-            # Create variant ID in format chr_start_end
-            variant_id = f"{chromosome}_{start}_{end}"
-            
-            # Get the chipsample
-            chipsample = ChipSample.objects.get(pk=chipsample_pk)
-            
             # Create new CNV
+            variant_id = f"{cnv_type}_{chromosome}_{start}_{end}"
             cnv_json = {
-                "chr_info": roi,  # Using full ROI string as chr_info
-                "chromosome": chromosome,
-                "start": start,
-                "end": end,
-                "type": "ROI",
-                "Total score": 0,
-                "VariantID": variant_id
+                "chr_info": roi,
+                "Type": cnv_type.capitalize(),
+                "Classification": "Not Classified",
+                "total_score": 0,
+                "Chromosome": chromosome,
+                "Start": start,
+                "End": end,
+                "Length": end - start,
+                "iscn": f"{chromosome}({start}-{end})",
+                "numsnp_info": "numsnp_info=0",
+                "length_info": f"length_info={end-start}",
+                "state_info": "state_info=2" if cnv_type == "duplication" else "state_info=1",
+                "conf": "conf=1.0",
+                "addToReport": False
             }
             
-            # Save to database with variant_id
             cnv = CNV.objects.create(
-                chipsample=chipsample,
-                cnv_json=cnv_json,
-                variant_id=variant_id  # Adding variant_id to the model
+                chipsample_id=chipsample_pk,
+                variant_id=variant_id,
+                cnv_json=cnv_json
             )
+
+            # Prepare CNV data for pipeline
+            chipsample = ChipSample.objects.get(id=chipsample_pk)
+            chip_id = chipsample.chip.chip_id
+
+            # Format CNV data with just the required fields
+            cnv_data = {
+                "chrom": chromosome,
+                "start": start,
+                "end": end,
+                "cnv_pk": cnv.pk,
+                "type": cnv_type,
+                "snap_probes": snap_probes
+            }
+
+            if not settings.DEBUG:
+                HOST_IP = get_default_gateway_linux()
+                MINIO_IP = socket.gethostbyname("minio")
+                label = secrets.token_urlsafe(6)
+
+                # Write CNV data to temporary file
+                with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as cnv_file:
+                    json.dump(cnv_data, cnv_file)
+                    cnv_file.flush()
+                    subprocess.run(
+                        f"scp {cnv_file.name} canvas@{HOST_IP}:/tmp/",
+                        shell=True,
+                    )
+
+                # Create nextflow config file
+                with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
+                    nfc.write(
+                        f"""aws {{
+    access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
+    secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
+    client {{
+    endpoint = "http://{MINIO_IP}:9000"
+    }}
+    }}
+    profiles {{
+    docker {{
+        docker.enabled = true
+    }}
+    }}"""
+                    )
+                    nfc.flush()
+                    subprocess.run(
+                        f"scp {nfc.name} canvas@{HOST_IP}:/tmp/",
+                        shell=True,
+                    )
+
+                # Run the pipeline with only required parameters
+                subprocess.run(
+                    f'ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
+                                                        --chip_id {chip_id} \
+                                                        --position {chipsample.position} \
+                                                        --cnvs {cnv_file.name} \
+                                                        -c {nfc.name} \
+                                                        -profile docker',
+                    shell=True,
+                )
+
+                # Wait for pipeline completion and associate files
+                subprocess.run(
+                    f"ssh canvas@{HOST_IP} 'tsp -f -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
+                                            -f /home/canvas/canvas/docker-compose_prod.yaml \
+                                            exec canvas \
+                                            python manage.py associate_files --pdf {chip_id} canvas'",
+                    shell=True,
+                )
+
+            return render(request, "canvas/partials/cnv_edit_success.html", {
+                "success": True,
+                "message": "CNV successfully added",
+                "cnv": json.dumps(cnv.cnv_json)
+            })
             
-            return render(
-                request,
-                "canvas/partials/cnv_edit_success.html",
-                {
-                    "success": True,
-                    "message": f"Successfully created new CNV: {variant_id}"
-                }
-            )
-            
-        except (ValueError, ChipSample.DoesNotExist) as e:
-            return render(
-                request,
-                "canvas/partials/cnv_edit_success.html",
-                {
-                    "success": False,
-                    "message": f"Error creating CNV: {str(e)}"
-                }
-            )
+        except Exception as e:
+            return render(request, "canvas/partials/cnv_edit_success.html", {
+                "success": False,
+                "message": str(e)
+            })
+
+    return render(request, "canvas/partials/cnv_edit_success.html", {
+        "success": False,
+        "message": "Invalid request method"
+    })

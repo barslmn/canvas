@@ -29,15 +29,27 @@
                         <div class="no-cnv-message">No intersecting CNVs found for this ROI</div>
                     {% endif %}
                 </div>
-                <button class="add-cnv-btn" 
-                        hx-post="{% url 'cnv_edit' %}"
-                        hx-vals='{
-                            "roi": "{{ roi }}",
-                            "chipsample_pk": "{{ chipsample.pk }}"
-                        }'
-                        hx-target="#cnv-edit-result">
-                    Add New CNV
-                </button>
+                <div class="cnv-controls">
+                    <select name="type" class="cnv-type-select" id="type-{{ roi|slugify }}">
+                        <option value="deletion">Deletion</option>
+                        <option value="duplication">Duplication</option>
+                    </select>
+                    <label class="snap-probes-label">
+                        <input type="checkbox" name="snap_probes" id="snap-{{ roi|slugify }}" checked>
+                        Snap to probes
+                    </label>
+                    <button class="add-cnv-btn" 
+                            hx-post="{% url 'cnv_edit' %}"
+                            hx-vals='{
+                                "roi": "{{ roi }}",
+                                "chipsample_pk": "{{ chipsample.pk }}",
+                                "type": "#type-{{ roi|slugify }}",
+                                "snap_probes": "#snap-{{ roi|slugify }}"
+                            }'
+                            hx-target="#cnv-edit-result">
+                        Add New CNV
+                    </button>
+                </div>
             </div>
         </div>
         {% endfor %}
@@ -66,6 +78,20 @@
     }
     .cnv-item {
         margin: 0.5em 0;
+    }
+    .cnv-controls {
+        display: flex;
+        gap: 1em;
+        align-items: center;
+    }
+    .cnv-type-select {
+        padding: 0.3em;
+        border-radius: 5px;
+    }
+    .snap-probes-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5em;
     }
     .add-cnv-btn {
         background-color: #a8d5ff;
