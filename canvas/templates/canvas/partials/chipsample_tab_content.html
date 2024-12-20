@@ -1,8 +1,10 @@
 <div id="tab-content-{{ chipsample.pk }}" x-show="activeTab === {{ chipsample.pk }}" x-transition>
-  {% include 'canvas/components/reports.html' with button="true" %}
-  
-  <button @click="get_rois()">Edit CNV</button>
 
+    <nav class="d-flex">
+        {% include 'canvas/components/reports.html' with button="true" %}
+        <button class="btn btn-primary" @click="get_rois()">Edit CNV</button>
+        {% include 'canvas/components/create_report_button.html' %}
+    </nav>
 
   <div class="igv-table">
     <div id="igv-div-{{ chipsample.pk }}" style="width: 100%;height: 100%"></div>
