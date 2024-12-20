@@ -16,27 +16,6 @@
   <!-- Main content area -->
   <div>
     <div x-show="views.currentView === 'samples'" x-transition x-transition.duration.500ms>
-      <nav>
-        <ul>
-          <li>
-            <a data-tooltip="Hide/Show sample search component." data-placement="bottom"
-              @click="sampleSearchOpen = !sampleSearchOpen">
-              <i class="fa-solid fa-magnifying-glass"></i>
-              Sample Search
-            </a>
-          </li>
-          <li>
-            <a data-tooltip="Add new samples." data-placement="bottom" @click="sampleFormOpen = !sampleFormOpen">
-              <i class="fa-solid fa-plus"></i>
-              New Samples
-            </a>
-          </li>
-        </ul>
-
-        <ul id="tab-buttons"></ul>
-        <ul></ul>
-      </nav>
-
       <div
         :class="(sampleSearchOpen === true && (sampleFormOpen === true || activeTab > 0)) ? 'sample-container' : 'container-fluid'">
         <div x-show="sampleSearchOpen === true" x-transition>

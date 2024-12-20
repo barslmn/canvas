@@ -11,7 +11,7 @@
   <p>version: v24.10</p>
   <p>commit: {{ canvas_version }}</p>
 
-  <aside style="flex-grow:1;">
+  <aside >
     <nav>
       <ul>
         <li>
@@ -25,6 +25,28 @@
             <i class="fa-solid fa-vial"></i>
             <span>Samples</span>
           </a>
+          <ul x-show="views.currentView === 'samples'" style="padding-left: 1.5rem;">
+            <li>
+              <a
+                data-tooltip="Hide/Show sample search component."
+                data-placement="right"
+                @click="sampleSearchOpen = !sampleSearchOpen"
+              >
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <span>Sample Search</span>
+              </a>
+            </li>
+            <li>
+              <a
+                data-tooltip="Add new samples."
+                data-placement="right"
+                @click="sampleFormOpen = !sampleFormOpen"
+              >
+                <i class="fa-solid fa-plus"></i>
+                <span>New Samples</span>
+              </a>
+            </li>
+          </ul>
         </li>
         <li>
           <a
@@ -35,20 +57,56 @@
             :class="views.currentView === 'chips' ? 'primary' : 'secondary'"
           >
             <i class="fa-solid fa-grip-vertical"></i>
-            <span x-show="sidebar.isExpanded">Chips</span>
+            <span>Chips</span>
           </a>
+          <ul x-show="views.currentView === 'chips'" style="padding-left: 1.5rem;">
+            <li>
+<input
+  autocomplete="off"
+  id="chip-search"
+  type="search"
+  name="search"
+  placeholder="Chip search start by tying in barcode"
+  hx-get="{% url 'chip_search' %}"
+  hx-trigger="input changed delay:500ms, searchChips from:document"
+  hx-target="#chips"
+  hx-swap="swap:200ms"
+/>
+            </li>
+            <li>
+              <a
+                data-tooltip="Upload new idats."
+                data-placement="right"
+                @click="chipFormOpen = !chipFormOpen"
+              >
+                <i class="fa-solid fa-plus"></i>
+                <span>New Chip</span>
+              </a>
+            </li>
+          </ul>
         </li>
-
-        <li>{% include 'canvas/dark_mode_toggle.html' %}</li>
       </ul>
     </nav>
   </aside>
+
+  <aside x-show="views.currentView === 'samples'" x-transition>
+    <nav>
+      <ul id="tab-buttons" style="max-height: 40vh; overflow-y: auto; scrollbar-width: thin;"></ul>
+    </nav>
+  </aside>
+
+  <aside x-show="views.currentView === 'samples'" x-transition>
+    <div id="chipsample-sidebar-content">
+    </div>
+  </aside>
+
 
   <div x-show="idat_uploading">
     <progress id="idat-upload-progress" value="0" max="100"></progress>
     <span id="idat-upload-span"></span>
   </div>
-
+ 
+  <div class="flex-grow" style="flex: 1 1 auto;"></div>
   <hr>
   <details class="dropdown">
     <summary>
@@ -61,7 +119,7 @@
       {% endfor %}
     </ul>
   </details>
-
+        {% include 'canvas/dark_mode_toggle.html' %}
   <p>
     <i class="fa-solid fa-user"></i>
     {{ user.username }}</p>

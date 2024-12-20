@@ -963,6 +963,14 @@ def chipsample_tab_content(request):
 
 
 @login_required
+def chipsample_sidebar_content(request):
+    chipsample_pk = request.GET.get("chipsample_pk")
+    chipsample = ChipSample.objects.get(id=chipsample_pk)
+    return render(
+        request, "canvas/partials/chipsample_sidebar_content.html", {"chipsample": chipsample}
+    )
+
+@login_required
 def sample_edit(request):
     if request.method == "GET":
         sample_pk = request.GET.get("sample_pk")

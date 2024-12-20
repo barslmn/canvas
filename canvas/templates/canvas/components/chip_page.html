@@ -1,30 +1,3 @@
-<nav>
-  <ul>
-    <li>
-      <a
-        data-tooltip="Upload new idats."
-        data-placement="bottom"
-        @click="chipFormOpen = !chipFormOpen"
-      >
-        <i class="fa-solid fa-plus"></i>
-        New Chip
-      </a>
-    </li>
-  </ul>
-</nav>
-
-<input
-  autocomplete="off"
-  id="chip-search"
-  type="search"
-  name="search"
-  placeholder="Chip search start by tying in barcode"
-  hx-get="{% url 'chip_search' %}"
-  hx-trigger="input changed delay:500ms, searchChips from:document"
-  hx-target="#chips"
-  hx-swap="swap:200ms"
-/>
-
 <div class="overflow-auto" style="height:86vh; width:88vw;">
   <div class="grid-container">
     <article

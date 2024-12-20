@@ -20,6 +20,11 @@ urlpatterns = [
         views.chipsample_tab_button,
         name="chipsample_tab_button",
     ),
+    path(
+        "chipsample_sidebar_content",
+        views.chipsample_sidebar_content,
+        name="chipsample_sidebar_content",
+    ),
     path("idat_upload", views.idat_upload, name="idat_upload"),
     path(
         "get_sample_input_row/", views.get_sample_input_row, name="get_sample_input_row"

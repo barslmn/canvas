@@ -144,7 +144,15 @@
             hx-swap="beforeend"
             hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
           >
+          <div
+          hx-get="{% url 'chipsample_sidebar_content' %}"
+          hx-target="#chipsample-sidebar-content"
+          hx-trigger="click"
+          hx-swap="beforeend"
+          hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
+          >
             <i class="fa-solid fa-dna"></i> View Variants
+          </div>
           </button>
         </div>
       </header>
