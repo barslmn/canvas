@@ -1,0 +1,34 @@
+<summary
+  role="button"
+  class="outline
+    {% if chipsample.report.count == 0 %}
+    secondary
+  {% endif %}
+        "
+  style="
+          border-radius: 1em;
+          "
+  hx-trigger="triggerReportUpdate{{ chipsample.pk }} from:body"
+  hx-post="{% url 'get_report_count' %}"
+  hx-vals='{"chipsample_pk":"{{ chipsample.pk }}",
+             "button": "{{ button }}"
+        }'
+  hx-target="this"
+  hx-swap="outerHTML"
+>
+  <div
+    hx-post="{% url 'get_reports' %}"
+    hx-vals='{"chipsample_pk":"{{ chipsample.pk }}",
+             "button": "{{ button }}"
+             }'
+    hx-target="next ul"
+    hx-swap="outerHTML"
+  >
+    {% if chipsample.report.count == 0 %}
+      No reports
+    {% else %}
+      {{ chipsample.report.count }}
+      Reports
+    {% endif %}
+  </div>
+</summary>

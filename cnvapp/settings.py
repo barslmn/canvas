@@ -190,6 +190,14 @@ if DEBUG:
     MEDIA_URL = "media/"
 
 else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "minio_storage.storage.MinioMediaStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "minio_storage.storage.MinioStaticStorage",
+        },
+    }
     DEFAULT_FILE_STORAGE = "minio_storage.storage.MinioMediaStorage"
     STATICFILES_STORAGE = "minio_storage.storage.MinioStaticStorage"
 

@@ -1,11 +1,14 @@
 {% load sortedchip %}
 
+
 <article class="chip-container">
   <header>
-    <h2 style="display:inline">{{ chip }}</h2>
-    <span class="badge pico-background-cyan-500">{{ chip.chip_type }}</span>
+    <div>
+      <h4 style="display:inline">{{ chip }}</h4>
+      <span class="badge pico-background-cyan-500">{{ chip.chip_type }}</span>
+    </div>
     {% if user.is_staff %}
-      <nav style="float:right; transform:translateY(-25%);">
+      <nav class="icon-nav">
         <ul>
           <li>
             <a href="#">
@@ -22,6 +25,23 @@
             >
               <i class="fa-solid fa-pencil pico-color-blue-500"></i>
             </a>
+          </li>
+          <li>
+            <details role="list" class="download-menu">
+              <summary aria-haspopup="listbox">
+                <i class="fa-solid fa-download pico-color-purple-500"></i>
+              </summary>
+              <ul role="listbox">
+                <li><a href="{% url 'download_chip_files' chip.id 'idats' %}">IDATs Download</a></li>
+                <li><a href="{% url 'download_chip_files' chip.id 'gtcs' %}">GTCs Download</a></li>
+                <li><a href="{% url 'download_chip_files' chip.id 'vcfs' %}">VCFs Download</a></li>
+                <li><a href="{% url 'download_chip_files' chip.id 'bedgraphs' %}">BedGraphs Download</a></li>
+                <li><a href="{% url 'download_chip_files' chip.id 'reports' %}">Reports Download</a></li>
+                <li>
+                <hr>
+                  <a href="{% url 'download_chip_files' chip.id 'all' %}">Download All Files</a></li>
+              </ul>
+            </details>
           </li>
         </ul>
       </nav>

@@ -27,6 +27,7 @@ urlpatterns = [
     path("save_samples/", views.save_samples, name="save_samples"),
     path("create_report/", views.create_report, name="create_report"),
     path("get_reports/", views.get_reports, name="get_reports"),
+    path("get_report_count/", views.get_report_count, name="get_report_count"),
     path("sample_edit/", views.sample_edit, name="sample_edit"),
     path("chip_edit/", views.chip_edit, name="chip_edit"),
     path("chip_search", views.chip_search, name="chip_search"),
@@ -35,5 +36,12 @@ urlpatterns = [
     path("save_acmg", views.save_acmg, name="save_acmg"),
     path("get_cnv_modal", views.get_cnv_modal, name="get_cnv_modal"),
     path("cnv_edit", views.cnv_edit, name="cnv_edit"),
-]       
 
+    path('download_samples/', views.download_samples, name='download_samples'),
+    path('match_chip_samples/', views.match_chip_samples, name='match_chip_samples'),
+    # Chip download URLs
+    path('download/chip/<int:chip_id>/<str:file_type>/', views.download_chip_files, name='download_chip_files'),
+    path('download/chipsample/<int:chipsample_id>/<str:file_type>/', 
+         views.download_chipsample_files, 
+         name='download_chipsample_files'),
+]

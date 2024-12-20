@@ -14,17 +14,13 @@
         <i class="fa-solid fa-xmark pico-color-red-500"></i>
       </a>
     </header>
-    {% include "canvas/components/acmg_loss.html" %}
+    {% include "canvas/components/acmg.html" %}
   </article>
 </dialog>
 
-<style>
-  dialog article {
-    max-width: unset;
-  }
-</style>
 
 {% if success %}
+  <div x-init="showVariantModal = false"></div>
   <script>
     table.updateData([
       {

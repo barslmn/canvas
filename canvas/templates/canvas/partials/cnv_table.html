@@ -1,10 +1,18 @@
+<!-- Add this before the main table div -->
+<div class="d-flex justify-content-start align-items-center gap-3 mb-3">
+    <strong>CNV Count:</strong>
+    <div id="cnv-pivot-{{ chipsample.pk }}" class="d-flex gap-3">
+    </div>
+</div>
+
+<!-- Existing table div -->
 <div id="cnv-table-{{ chipsample.pk }}"> </div>
 
 <script type="text/javascript">
 var classificationOrder = {
     "pathogenic": 1,
     "likely pathogenic": 2,
-    "vus": 3,
+    "uncertain significance": 3,
     "likely benign": 4,
     "benign": 5
 };
@@ -64,6 +72,63 @@ var rowMenu = [
         ]
     }
 ];
+
+// Add the minMaxFilterEditor function
+function minMaxFilterEditor(cell, onRendered, success, cancel, editorParams){
+    var container = document.createElement("div");
+    container.style.padding = "3px 3px";
+
+    var start = document.createElement("input");
+    start.setAttribute("type", "number");
+    start.setAttribute("placeholder", "Min");
+    start.style.width = "50%";
+    start.style.boxSizing = "border-box";
+
+    var end = document.createElement("input");
+    end.setAttribute("type", "number");
+    end.setAttribute("placeholder", "Max");
+    end.style.width = "50%";
+    end.style.boxSizing = "border-box";
+
+    container.appendChild(start);
+    container.appendChild(end);
+
+    function buildValues(){
+        return {
+            start:start.value,
+            end:end.value,
+        };
+    }
+
+    start.addEventListener("change", function(e){
+        success(buildValues());
+    });
+
+    end.addEventListener("change", function(e){
+        success(buildValues());
+    });
+
+    return container;
+}
+
+// Add the minMaxFilterFunction
+function minMaxFilterFunction(headerValue, rowValue, rowData, filterParams){
+    if(rowValue){
+        if(headerValue.start != ""){
+            if(headerValue.end != ""){
+                return rowValue >= headerValue.start && rowValue <= headerValue.end;
+            }else{
+                return rowValue >= headerValue.start;
+            }
+        }else{
+            if(headerValue.end != ""){
+                return rowValue <= headerValue.end;
+            }
+        }
+    }
+    return true;
+}
+
 var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
     data:{{ cnvs|safe }},
     layout:"fitData",
@@ -104,52 +169,114 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             },
         },
 
-        {title: "ISCN", field: "iscn", responsive:0},
-        {title: "Number of SNPs", field: "numsnp_info",
-            mutator: function(value, data, type, params, component) {
-                // Extract the numeric value from the string
-                return parseInt(value.replace(/[^0-9]/g, ''), 10);
-            }
+        {
+            title: "ISCN", 
+            field: "iscn", 
+            responsive:0,
+            headerFilter:"input"
         },
-        {title: "Length", field: "length_info",
-            mutator: function(value, data, type, params, component) {
-                // Extract the numeric value from the string
-                return parseInt(value.replace(/[^0-9]/g, ''), 10);
-            }
+        {
+            title: "All Protein Coding Genes", 
+            field: "All protein coding genes", 
+            responsive: 2,
+            headerFilter:"input",
+            formatter: function(cell, formatterParams) {
+                let value = cell.getValue();
+                if (value && value.length > 50) {
+                    return `<em style="white-space:normal;" title="${value}">${value.substring(0, 50)}...</em>`;
+                }
+                return `<em style="white-space:normal;">${value}</em>`;
+            },
+            width: 200
         },
-        {title: "Confidence", field: "conf",
-            mutator: function(value, data, type, params, component) {
-                // Extract the numeric value from the string
-                return parseFloat(value.replace(/[^0-9.-]+/g, ''));
-            }
-        },
-        {title: "Type", field: "Type"},
-        {title: "Classification", field: "Classification",
-                sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
-                    var classA = classificationOrder[a.toLowerCase()] || 6; // Defaults to 6 for unrecognized classifications
-                    var classB = classificationOrder[b.toLowerCase()] || 6;
-                    return classA - classB;
-                },
-                headerSortStartingDir: "asc"
-        },
-        {title: "Total Score", field: "total_score"},
-        {title: "Chromosome", field: "Chromosome", responsive:2},
-        {title: "Start", field: "Start", responsive:2},
-        {title: "End", field: "End", responsive:2},
         {
             title: "Known or Predicted Dosage-sensitive Genes",
             field: "Known or predicted dosage-sensitive genes",
             responsive: 2,
+            headerFilter:"input",
             formatter: function(cell, formatterParams) {
-                return `<em>${cell.getValue()}</em>`;
+                let value = cell.getValue();
+                if (value && value.length > 50) {
+                    return `<em title="${value}">${value.substring(0, 50)}...</em>`;
+                }
+                return `<em>${value}</em>`;
+            },
+            width: 200
+        },
+        {
+            title: "Number of SNPs", 
+            field: "numsnp_info",
+            headerFilter: minMaxFilterEditor,
+            headerFilterFunc: minMaxFilterFunction,
+            headerFilterLiveFilter: false,
+            mutator: function(value, data, type, params, component) {
+                return parseInt(value.replace(/[^0-9]/g, ''), 10);
             }
         },
         {
-            title: "All Protein Coding Genes", field: "All protein coding genes", responsive: 2,
-            formatter: function(cell, formatterParams) {
-                return `<em style="white-space:normal;">${cell.getValue()}</em>`;
-            },
+            title: "Length (bp)", 
+            field: "length_info",
+            headerFilter: minMaxFilterEditor,
+            headerFilterFunc: minMaxFilterFunction,
+            headerFilterLiveFilter: false,
+            mutator: function(value, data, type, params, component) {
+                return parseInt(value.replace(/[^0-9]/g, ''), 10);
+            }
         },
+        {
+            title: "Type", 
+            field: "Type",
+            headerFilter:"list",
+            headerFilterParams:{
+                values:{
+                    "": "All",
+                    "DEL": "Deletion",
+                    "DUP": "Duplication"
+                }
+            }
+        },
+        {
+            title: "Classification", 
+            field: "Classification",
+            headerFilter:"list",
+            headerFilterParams:{
+                values:Object.keys(classificationOrder)
+            },
+            sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+                var aValue = a ? a.toLowerCase() : '';
+                var bValue = b ? b.toLowerCase() : '';
+                var classA = classificationOrder[aValue] || 6;
+                var classB = classificationOrder[bValue] || 6;
+                return classA - classB;
+            },
+            headerSortStartingDir: "asc"
+        },
+        {
+            title: "Confidence", 
+            field: "conf",
+            headerFilter:"number",
+            headerFilterFunc:"<=",
+            headerFilterParams:{
+                min:0,
+                max:100
+            },
+            mutator: function(value, data, type, params, component) {
+                return parseFloat(value.replace(/[^0-9.-]+/g, ''));
+            }
+        },
+        {
+            title: "Total Score", 
+            field: "total_score",
+            headerFilter:"number",
+            headerFilterFunc:"<=",
+            headerFilterParams:{
+                min:0,
+                max:100
+            }
+        },
+        {title: "Chromosome", field: "Chromosome", responsive:2},
+        {title: "Start", field: "Start", responsive:2},
+        {title: "End", field: "End", responsive:2},
         {title: "State Info", field: "state_info", responsive: 2},
         {title: "Start SNP Info", field: "startsnp_info", responsive: 2},
         {title: "End SNP Info", field: "endsnp_info", responsive: 2},
@@ -214,4 +341,51 @@ table.on("rowClick", async function(e, row) {
         console.error('IGV browser instance not found.');
     }
 });
+
+// Add the color mapping
+var classificationColors = {
+    "pathogenic": "var(--pico-color-red-450)",
+    "likely pathogenic": "var(--pico-color-pumpkin-300)",
+    "uncertain significance": "var(--pico-color-yellow-150)",
+    "likely benign": "var(--pico-color-green-450)",
+    "benign": "var(--pico-color-blue-450)"
+};
+
+function updatePivotTable() {
+    const data = table.getData();
+    const counts = {};
+    
+    // Initialize counts
+    Object.keys(classificationOrder).forEach(classification => {
+        counts[classification] = 0;
+    });
+
+    // Count the variants
+    data.forEach(row => {
+        const classification = row.Classification ? row.Classification.toLowerCase() : 'unknown';
+        if (counts.hasOwnProperty(classification)) {
+            counts[classification]++;
+        }
+    });
+
+    // Update the display
+    const pivotDiv = document.getElementById('cnv-pivot-{{ chipsample.pk }}');
+    pivotDiv.innerHTML = Object.keys(classificationOrder)
+        .sort((a, b) => classificationOrder[a] - classificationOrder[b])
+        .map(classification => {
+            const count = counts[classification];
+            const displayName = classification.charAt(0).toUpperCase() + classification.slice(1);
+            const backgroundColor = classificationColors[classification] || 'var(--pico-color-slate-450)';
+            return `<span class="badge" style="background-color: ${backgroundColor}">${displayName}: ${count}</span>`;
+        })
+        .join('');
+}
+
+// Update pivot table when data changes
+table.on("dataFiltered", function(filters, rows) {
+    updatePivotTable();
+});
+
+// Initial pivot table update
+updatePivotTable();
 </script>
