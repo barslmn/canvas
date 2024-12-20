@@ -157,27 +157,3 @@
 {% for k, v in cnv.cnv_json.items %}
   <p>{{ k }}: {{ v }}</p>
 {% endfor %}
-
-<style>
-  .evidence-card {
-    padding: 1.4em 1em 1em 1em;
-    transition:
-      box-shadow 0.3s ease,
-      border-color 0.3s ease;
-    border: 0.4em solid transparent;
-    border-radius: 2em;
-  }
-
-  .evidence-card.glow {
-    border-color: var(--pico-color-slate-400);
-    border-radius: 2em;
-    box-shadow: 0em 0em 1em 0em var(--pico-color-slate-250);
-  }
-
-  .slider-grid {
-    display: grid;
-    grid-template-columns: 1fr 120px;
-    justify-items: stretch;
-    align-items: stretch;
-  }
-</style>

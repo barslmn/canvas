@@ -1,0 +1,302 @@
+
+  /* Styles from base.html */
+      :root {
+        --pico-typography-spacing-vertical: 0.5rem;
+        --pico-form-element-spacing-vertical: 0.1rem;
+        --pico-form-element-spacing-horizontal: 0.25rem;
+        --pico-font-size: 0.8rem;
+      }
+      select {
+        height: 2em;
+      }
+      .main {
+        display: grid;
+        grid-template-columns: 1fr 5px 11fr;
+        grid-row-gap: 0.6em;
+        justify-items: stretch;
+        align-items: stretch;
+      }
+
+      .gutter-col {
+        display: grid;
+        grid-row: 1/-1;
+        cursor: col-resize;
+        justify-items: center;
+        align-items: center;
+      }
+
+      .gutter-col-1 {
+        grid-column: 2;
+      }
+
+      .sample-container {
+        display: grid;
+        grid-template-columns: 3fr 9fr;
+        grid-column-gap: 0.6em;
+        grid-row-gap: 0.6em;
+        justify-items: stretch;
+        align-items: stretch;
+      }
+      .evidence-container {
+        display: grid;
+        grid-template-columns: 1fr 11fr;
+        grid-column-gap: 0.6em;
+        grid-row-gap: 0.6em;
+        justify-items: stretch;
+        align-items: stretch;
+        border-top-width: thin;
+        border-top-style: solid;
+      }
+      .evidence-group {
+        margin: auto;
+      }
+
+      .sample-search .dropdown > summary {
+        height: unset !important;
+        padding: 0 !important;
+        border-radius: 2em !important;
+      }
+      details.dropdown summary::after {
+        display: none;
+      }
+
+      .dropdown > summary input {
+        margin: 0;
+        background: transparent;
+        border: none;
+      }
+
+      .dropdown > summary input:focus {
+        box-shadow: none;
+      }
+      .badge {
+        border-radius: 2em;
+        padding: 0.2em 0.6em;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3em;
+        transform: translateY(-15%);
+        margin-top: 5px;
+      }
+      .badge a {
+        background: none;
+        border: none;
+        color: #888;
+        line-height: 1;
+        padding: 0;
+        cursor: pointer;
+        transition: color 0.3s ease;
+      }
+      .htmx-swapping {
+        opacity: 0;
+        transition: opacity 1s ease-out;
+      }
+      /* scrollbar */
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+
+      ::-webkit-scrollbar-track {
+        -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+        -webkit-border-radius: 10px;
+        border-radius: 10px;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        -webkit-border-radius: 10px;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.3);
+        -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.5);
+      }
+
+      ::-webkit-scrollbar-thumb:window-inactive {
+        background: rgba(255, 255, 255, 0.3);
+      }
+
+
+
+  /* Styles for create_report_button.html */
+  .htmx-indicator {
+    display: none;
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+  }
+  .htmx-request button {
+    display: none;
+  }
+  .htmx-request .htmx-indicator {
+    display: inherit;
+    opacity: 1;
+  }
+  #report-indicator {
+    margin-left: 0.5rem;
+  }
+
+  /* styles from acmg.html */
+  
+  .evidence-card {
+    padding: 1.4em 1em 1em 1em;
+    transition:
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+    border: 0.4em solid transparent;
+    border-radius: 2em;
+  }
+
+  .evidence-card.glow {
+    border-color: var(--pico-color-slate-400);
+    border-radius: 2em;
+    box-shadow: 0em 0em 1em 0em var(--pico-color-slate-250);
+  }
+
+  .slider-grid {
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    justify-items: stretch;
+    align-items: stretch;
+  }
+  
+  /* styles from variant_modal.html */
+  dialog article {
+    max-width: unset;
+  }
+
+  /* styles from chip_page.html */
+  .grid-container {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 1rem;
+    overflow-x: auto;
+  }
+
+  .chip-container {
+    flex: 0 0 18vw;
+    padding: 1rem;
+    min-width: 18vw;
+  }
+
+  .sample {
+    min-width: 8vw;
+    min-height: 8vh;
+    height: 8vh;
+    width: 8vw;
+  }
+
+  /* styles from chipsample_tab_content.html */
+.igv-table {
+    display: grid;
+    grid-template-rows: 1fr 10px 1fr;
+}
+.gutter-row {
+  display: grid;
+  grid-column: 1/-1;
+  cursor: row-resize;
+  justify-items: center;
+  align-items: center;
+}
+.gutter-row-1 {
+    grid-row: 2;
+}
+
+/* styles from sample.html */
+    details.download-menu summary::after {
+      display: none;
+    }
+    details.download-menu summary {
+      padding: 0;
+      margin: 0;
+    }
+    details.download-menu {
+      margin: 0;
+      position: relative;
+    }
+    details.download-menu[role="list"] ul[role="listbox"] {
+      position: absolute;
+      left: 0;
+      top: 100%;
+      z-index: 1000;
+      min-width: 200px;
+      background-color: var(--pico-card-background-color);
+      border: var(--pico-border-width) solid var(--pico-muted-border-color);
+      border-radius: var(--pico-border-radius);
+      box-shadow: var(--pico-card-box-shadow);
+      display: flex;
+      flex-direction: column;
+    }
+    details.download-menu[role="list"] ul[role="listbox"] li {
+      padding: 0.6em;
+      display: block;
+      width: 100%;
+    }
+    details.download-menu[role="list"] ul[role="listbox"] li a {
+      display: block;
+    }
+
+/* styles from chips.html */
+
+    .vertical-text {
+        writing-mode: vertical-rl;
+        transform: rotate(180deg);
+        padding: 10px;
+        color: #666;
+        height: fit-content;
+        align-self: flex-start;
+    }
+
+    .start-marker {
+        float: left;
+        margin-right: 10px;
+        position: sticky;
+        top: 0;
+    }
+
+    .end-marker {
+        float: right;
+        margin-left: 10px;
+        position: sticky;
+        top: 0;
+    }
+
+/* styles from chip_edit.html */
+
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator {
+    display: inline;
+}
+
+/* styles from chip.html */
+  details.download-menu summary::after {
+    display: none;
+  }
+  details.download-menu summary {
+    padding: 0;
+    margin: 0;
+  }
+  details.download-menu {
+    margin: 0;
+    position: relative;
+  }
+  details.download-menu[role="list"] ul[role="listbox"] {
+    position: absolute;
+    left: 0;
+    top: 100%;
+    z-index: 1000;
+    min-width: 200px;
+    background-color: var(--pico-card-background-color);
+    border: var(--pico-border-width) solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    box-shadow: var(--pico-card-box-shadow);
+    display: flex;
+    flex-direction: column;
+  }
+  details.download-menu[role="list"] ul[role="listbox"] li {
+    padding: .6em;
+    display: block;
+    width: 100%;
+  }
+  details.download-menu[role="list"] ul[role="listbox"] li a {
+    display: block;
+  }

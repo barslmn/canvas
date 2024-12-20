@@ -1,28 +1,3 @@
-<style>
-    .vertical-text {
-        writing-mode: vertical-rl;
-        transform: rotate(180deg);
-        padding: 10px;
-        color: #666;
-        height: fit-content;
-        align-self: flex-start;
-    }
-
-    .start-marker {
-        float: left;
-        margin-right: 10px;
-        position: sticky;
-        top: 0;
-    }
-
-    .end-marker {
-        float: right;
-        margin-left: 10px;
-        position: sticky;
-        top: 0;
-    }
-</style>
-
 {% if chips.number == 1 %}
     <div class="vertical-text start-marker">
         <div class="badge" :class="{'pico-background-green-400': {{ len_chips }} > 0, 'pico-background-red-500': {{ len_chips }} == 0}">

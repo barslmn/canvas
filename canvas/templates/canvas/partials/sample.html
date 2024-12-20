@@ -54,40 +54,6 @@
     </p>
   {% endif %}
 
-  <style>
-    details.download-menu summary::after {
-      display: none;
-    }
-    details.download-menu summary {
-      padding: 0;
-      margin: 0;
-    }
-    details.download-menu {
-      margin: 0;
-      position: relative;
-    }
-    details.download-menu[role="list"] ul[role="listbox"] {
-      position: absolute;
-      left: 0;
-      top: 100%;
-      z-index: 1000;
-      min-width: 200px;
-      background-color: var(--pico-card-background-color);
-      border: var(--pico-border-width) solid var(--pico-muted-border-color);
-      border-radius: var(--pico-border-radius);
-      box-shadow: var(--pico-card-box-shadow);
-      display: flex;
-      flex-direction: column;
-    }
-    details.download-menu[role="list"] ul[role="listbox"] li {
-      padding: 0.6em;
-      display: block;
-      width: 100%;
-    }
-    details.download-menu[role="list"] ul[role="listbox"] li a {
-      display: block;
-    }
-  </style>
 
   {% for chipsample in sample.chipsample.all %}
     <article>
