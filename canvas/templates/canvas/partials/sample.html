@@ -5,8 +5,9 @@
     "{{ samples.next_page_number }}", "search": "{{ query }}", "institutions":
     getSelectedInstitutions(), "chips": getSelectedChips()}'
   {% endif %}
+  style="border-radius:1em; padding:2em;"
 >
-  <header>
+  <header style="border-radius:1em; padding:1em;">
     {% if user.is_staff %}
       <nav style="float:right; transform:translateY(-25%);">
         <ul>
@@ -54,10 +55,9 @@
     </p>
   {% endif %}
 
-
   {% for chipsample in sample.chipsample.all %}
-    <article>
-      <header>
+    <article style="border-radius:1em; padding:1em;">
+      <header style="border-radius:1em; padding:1em;">
         <span class="badge pico-background-yellow-200">
           <strong>Chip ID:</strong>
           {{ chipsample.chip.chip_id }}
@@ -144,15 +144,15 @@
             hx-swap="beforeend"
             hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
           >
-          <div
-          hx-get="{% url 'chipsample_sidebar_content' %}"
-          hx-target="#chipsample-sidebar-content"
-          hx-trigger="click"
-          hx-swap="beforeend"
-          hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
-          >
-            <i class="fa-solid fa-dna"></i> View Variants
-          </div>
+            <div
+              hx-get="{% url 'chipsample_sidebar_content' %}"
+              hx-target="#chipsample-sidebar-content"
+              hx-trigger="click"
+              hx-swap="beforeend"
+              hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
+            >
+              <i class="fa-solid fa-dna"></i> View Variants
+            </div>
           </button>
         </div>
       </header>
@@ -196,7 +196,9 @@
         {{ chipsample.sex_estimate }}
       </div>
 
-      <footer>{% include 'canvas/components/reports.html' %}</footer>
+      <footer style="border-radius:1em; padding:1em;">
+        {% include 'canvas/components/reports.html' %}
+      </footer>
     </article>
   {% endfor %}
 </article>

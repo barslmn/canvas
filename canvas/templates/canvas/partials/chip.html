@@ -1,6 +1,5 @@
 {% load sortedchip %}
 
-
 <article class="chip-container">
   <header>
     <div>
@@ -32,14 +31,37 @@
                 <i class="fa-solid fa-download pico-color-purple-500"></i>
               </summary>
               <ul role="listbox">
-                <li><a href="{% url 'download_chip_files' chip.id 'idats' %}">IDATs Download</a></li>
-                <li><a href="{% url 'download_chip_files' chip.id 'gtcs' %}">GTCs Download</a></li>
-                <li><a href="{% url 'download_chip_files' chip.id 'vcfs' %}">VCFs Download</a></li>
-                <li><a href="{% url 'download_chip_files' chip.id 'bedgraphs' %}">BedGraphs Download</a></li>
-                <li><a href="{% url 'download_chip_files' chip.id 'reports' %}">Reports Download</a></li>
                 <li>
-                <hr>
-                  <a href="{% url 'download_chip_files' chip.id 'all' %}">Download All Files</a></li>
+                  <a href="{% url 'download_chip_files' chip.id 'idats' %}"
+                    >IDATs Download</a
+                  >
+                </li>
+                <li>
+                  <a href="{% url 'download_chip_files' chip.id 'gtcs' %}"
+                    >GTCs Download</a
+                  >
+                </li>
+                <li>
+                  <a href="{% url 'download_chip_files' chip.id 'vcfs' %}"
+                    >VCFs Download</a
+                  >
+                </li>
+                <li>
+                  <a href="{% url 'download_chip_files' chip.id 'bedgraphs' %}"
+                    >BedGraphs Download</a
+                  >
+                </li>
+                <li>
+                  <a href="{% url 'download_chip_files' chip.id 'reports' %}"
+                    >Reports Download</a
+                  >
+                </li>
+                <li>
+                  <hr />
+                  <a href="{% url 'download_chip_files' chip.id 'all' %}"
+                    >Download All Files</a
+                  >
+                </li>
               </ul>
             </details>
           </li>
@@ -47,22 +69,24 @@
       </nav>
     {% endif %}
   </header>
-  {% sortedchip chip as chipsample_rows %}
-  {% for chipsample_row in chipsample_rows %}
-    <div class="grid">
-      {% for chipsample in chipsample_row %}
-        {% if chipsample.sample %}
-          <article class="sample">
-            <p>{{ chipsample.position }}</p>
-            <p>{{ chipsample.sample.protocol_id }}</p>
-          </article>
-        {% else %}
-          <article class="sample">
-            <p>{{ chipsample }}</p>
-            <p>No sample</p>
-          </article>
-        {% endif %}
-      {% endfor %}
-    </div>
-  {% endfor %}
+  <div style=" height:76vh;overflow-y:auto; scrollbar-width: thin;">
+    {% sortedchip chip as chipsample_rows %}
+    {% for chipsample_row in chipsample_rows %}
+      <div class="grid">
+        {% for chipsample in chipsample_row %}
+          {% if chipsample.sample %}
+            <article class="sample">
+              <p>{{ chipsample.position }}</p>
+              <p>{{ chipsample.sample.protocol_id }}</p>
+            </article>
+          {% else %}
+            <article class="sample">
+              <p>{{ chipsample }}</p>
+              <p>No sample</p>
+            </article>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
 </article>

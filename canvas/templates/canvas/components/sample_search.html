@@ -17,7 +17,10 @@
     {% include 'canvas/components/generic_search.html' with model_name="Chip" field_name="chip_id" label="sample-search" isSingleSelect="false" eventName="searchSamples" %}
   </div>
 
-  <div id="sample-search-results" style="overflow:auto; height:80vh;">
+  <div
+    id="sample-search-results"
+    style="overflow:auto; height:80vh; padding:1em;"
+  >
     {% include "canvas/partials/sample_results.html" %}
   </div>
 </div>
