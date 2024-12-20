@@ -1360,6 +1360,164 @@ def save_acmg(request):
     return render(request, "canvas/components/variant_modal.html", context)
 
 
+def get_cnv_modal(request):
+    if request.method == "POST":
+        chipsample_pk = request.POST.get("chipsample_pk")
+        chipsample = ChipSample.objects.get(id=chipsample_pk)
+
+        # Parse ROIs from the POST request
+        rois = request.POST.get("rois", "[]")
+        try:
+            rois = json.loads(rois)
+        except json.JSONDecodeError:
+            rois = []
+
+        # Initialize dictionary to store CNVs by ROI
+        intersecting_cnvs_by_roi = {roi: [] for roi in rois}
+
+        # Prepare ROI ranges
+        roi_ranges = {}
+        for roi in rois:
+            try:
+                chromosome, positions = roi.split(":")
+                start, end = map(int, positions.split("-"))
+                roi_ranges[roi] = (chromosome, start, end)
+            except ValueError:
+                continue
+
+        # Get all CNVs for this chipsample
+        cnvs = CNV.objects.filter(chipsample=chipsample)
+
+        # Check each CNV against each ROI
+        for cnv in cnvs:
+            chr_info = cnv.cnv_json.get("chr_info")
+            if not chr_info:
+                continue
+
+            try:
+                cnv_chromosome, positions = chr_info.split(":")
+                cnv_start, cnv_end = map(int, positions.split("-"))
+            except ValueError:
+                continue
+
+            # Check intersection with each ROI
+            for roi, (roi_chromosome, roi_start, roi_end) in roi_ranges.items():
+                if (
+                    cnv_chromosome == roi_chromosome
+                    and roi_start <= cnv_end
+                    and roi_end >= cnv_start
+                ):
+                    intersecting_cnvs_by_roi[roi].append(cnv)
+
+        context = {
+            "chipsample": chipsample,
+            "rois": rois,
+            "intersecting_cnvs_by_roi": intersecting_cnvs_by_roi,
+            "showModal": True,
+        }
+        return render(request, "canvas/components/cnv_modal.html", context)
+
+
+@login_required
+def cnv_edit(request):
+    if request.method == "POST":
+        chipsample_pk = request.POST.get("chipsample_pk")
+        roi = request.POST.get("roi")  # Format: chr:start-end
+        cn = request.POST.get("copy_number", "2")  # Default to CN=2 (normal)
+        snap_probes = request.POST.get("snap_probes", "true").lower() == "true"
+        
+        try:
+            # Parse ROI
+            chromosome, positions = roi.split(":")
+            start, end = map(int, positions.split("-"))
+            
+            # Create new CNV
+            chipsample = ChipSample.objects.get(id=chipsample_pk)
+            cnv = CNV.objects.create(
+                chipsample=chipsample,
+                user=request.user,
+                cnv_json={"user_cnv": roi, "user_copy_number": cn},
+            )
+
+            chip_id = chipsample.chip.chip_id
+
+            if not settings.DEBUG:
+                HOST_IP = get_default_gateway_linux()
+                MINIO_IP = socket.gethostbyname("minio")
+                label = secrets.token_urlsafe(6)
+
+                # Write CNV data to temporary file
+                with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as cnv_file:
+                    cnv_file.write(f"{chromosome}\t{start}\t{end}\t{cn}\n")
+                    cnv_file.flush()
+                    subprocess.run(
+                        f"scp {cnv_file.name} canvas@{HOST_IP}:/tmp/",
+                        shell=True,
+                    )
+
+                # Create nextflow config file
+                with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
+                    nfc.write(
+                        f"""aws {{
+    access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
+    secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
+    client {{
+    endpoint = "http://{MINIO_IP}:9000"
+    }}
+    }}
+    profiles {{
+    docker {{
+        docker.enabled = true
+    }}
+    }}"""
+                    )
+                    nfc.flush()
+                    subprocess.run(
+                        f"scp {nfc.name} canvas@{HOST_IP}:/tmp/",
+                        shell=True,
+                    )
+
+                # Run the pipeline with only required parameters
+                subprocess.run(
+                    f'ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
+                                                        --chip_id {chip_id} \
+                                                        --position {chipsample.position} \
+                                                        --cnv {cnv_file.name} \
+                                                        --snap_probes {snap_probes} \
+                                                        --cnv_pk {cnv.pk} \
+                                                        --band s3://canvas/analysis_files/GSA-Cyto/hg19_chrom_band.txt \
+                                                        -c {nfc.name} \
+                                                        -profile docker',
+                    shell=True,
+                )
+
+                # Wait for pipeline completion and associate files
+                subprocess.run(
+                    f"ssh canvas@{HOST_IP} 'tsp -f -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
+                                            -f /home/canvas/canvas/docker-compose_prod.yaml \
+                                            exec canvas \
+                                            python manage.py associate_files --cnv {cnv.pk} {chip_id} canvas'",
+                    shell=True,
+                )
+
+            return render(request, "canvas/partials/cnv_edit_success.html", {
+                "success": True,
+                "message": "CNV successfully added",
+                "cnv": json.dumps(cnv.cnv_json)
+            })
+            
+        except Exception as e:
+            return render(request, "canvas/partials/cnv_edit_success.html", {
+                "success": False,
+                "message": str(e)
+            })
+
+    return render(request, "canvas/partials/cnv_edit_success.html", {
+        "success": False,
+        "message": "Invalid request method"
+    })
+
+
 def download_samples(request):
     # Get the filters from request
     try:

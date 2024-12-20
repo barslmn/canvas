@@ -47,7 +47,7 @@ var rowMenu = [
                     var end = data["End"];
 
                     // Construct the ClinGen URL
-                    var clingenUrl = `https://search.clinicalgenome.org/kb/regions?page=1&type=GRCh37&region=chr${chromosome}%3A${start}-${end}&size=25&search=`;
+                    var clingenUrl = `https://search.clinicalgenome.org/kb/regions?page=1&type=GRCh37&region=${chromosome}%3A${start}-${end}&size=25&search=`;
 
                     // Open the ClinGen search in a new tab
                     window.open(clingenUrl, '_blank');
@@ -62,8 +62,8 @@ var rowMenu = [
                     var start = data["Start"];
                     var end = data["End"];
 
-                    // Construct the ClinGen URL
-                    var UCSCUrl = `https://search.clinicalgenome.org/kb/regions?page=1&type=GRCh37&region=chr${chromosome}%3A${start}-${end}&size=25&search=`;
+                    // Construct the UCSC URL
+                    var UCSCUrl = `https://genome.ucsc.edu/cgi-bin/hgTracks?clade=vertebrate&org=Human&db=hg19&position=${chromosome}%3A${start}-${end}&size=25&search=`;
 
                     // Open the ClinGen search in a new tab
                     window.open(UCSCUrl, '_blank');
@@ -328,7 +328,7 @@ table.on("rowClick", async function(e, row) {
     var padding = Math.round(lengthInfo * 0.5);
 
     // Calculate start and end with boundary checks
-    var start = Math.max(0, parseInt(data.Start) - padding);
+    var start = Math.max(1, parseInt(data.Start) - padding);
     var chromMaxLength = chromLengths[data.Chromosome] || Infinity; // Use Infinity if chromosome not found
     var end = Math.min(chromMaxLength, parseInt(data.End) + padding);
 
