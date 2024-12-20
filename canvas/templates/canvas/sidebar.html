@@ -49,8 +49,11 @@
     <span id="idat-upload-span"></span>
   </div>
 
+  <hr>
   <details class="dropdown">
-    <summary>Institutes</summary>
+    <summary>
+      <i class="fa-solid fa-building"></i>
+      Institutes</summary>
 
     <ul>
       {% for group in user.groups.all %}
@@ -59,7 +62,9 @@
     </ul>
   </details>
 
-  <p>{{ user.username }}</p>
+  <p>
+    <i class="fa-solid fa-user"></i>
+    {{ user.username }}</p>
   <!-- Include Logout Form -->
   {% include "canvas/logout.html" %}
 </div>
