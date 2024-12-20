@@ -275,6 +275,7 @@ class CNV(models.Model):
     entry_date = models.DateTimeField(
         auto_now_add=True
     )  # Change to DateTimeField with auto_now_add=True
+    user = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
     variant_id = models.CharField(max_length=255)
     cnv_json = models.JSONField()
 

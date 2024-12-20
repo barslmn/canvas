@@ -1383,7 +1383,7 @@ def cnv_edit(request):
     if request.method == "POST":
         chipsample_pk = request.POST.get("chipsample_pk")
         roi = request.POST.get("roi")  # Format: chr:start-end
-        cnv_type = request.POST.get("type", "deletion")
+        cn = request.POST.get("copy_number", "2")  # Default to CN=2 (normal)
         snap_probes = request.POST.get("snap_probes", "true").lower() == "true"
         
         try:
@@ -1392,43 +1392,13 @@ def cnv_edit(request):
             start, end = map(int, positions.split("-"))
             
             # Create new CNV
-            variant_id = f"{cnv_type}_{chromosome}_{start}_{end}"
-            cnv_json = {
-                "chr_info": roi,
-                "Type": cnv_type.capitalize(),
-                "Classification": "Not Classified",
-                "total_score": 0,
-                "Chromosome": chromosome,
-                "Start": start,
-                "End": end,
-                "Length": end - start,
-                "iscn": f"{chromosome}({start}-{end})",
-                "numsnp_info": "numsnp_info=0",
-                "length_info": f"length_info={end-start}",
-                "state_info": "state_info=2" if cnv_type == "duplication" else "state_info=1",
-                "conf": "conf=1.0",
-                "addToReport": False
-            }
-            
+            chipsample = ChipSample.objects.get(id=chipsample_pk)
             cnv = CNV.objects.create(
-                chipsample_id=chipsample_pk,
-                variant_id=variant_id,
-                cnv_json=cnv_json
+                chipsample=chipsample,
+                user=request.user,
             )
 
-            # Prepare CNV data for pipeline
-            chipsample = ChipSample.objects.get(id=chipsample_pk)
             chip_id = chipsample.chip.chip_id
-
-            # Format CNV data with just the required fields
-            cnv_data = {
-                "chrom": chromosome,
-                "start": start,
-                "end": end,
-                "cnv_pk": cnv.pk,
-                "type": cnv_type,
-                "snap_probes": snap_probes
-            }
 
             if not settings.DEBUG:
                 HOST_IP = get_default_gateway_linux()
@@ -1437,7 +1407,7 @@ def cnv_edit(request):
 
                 # Write CNV data to temporary file
                 with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as cnv_file:
-                    json.dump(cnv_data, cnv_file)
+                    cnv_file.write(f"{chromosome}\t{start}\t{end}\t{cn}\n")
                     cnv_file.flush()
                     subprocess.run(
                         f"scp {cnv_file.name} canvas@{HOST_IP}:/tmp/",
@@ -1471,7 +1441,10 @@ def cnv_edit(request):
                     f'ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
                                                         --chip_id {chip_id} \
                                                         --position {chipsample.position} \
-                                                        --cnvs {cnv_file.name} \
+                                                        --cnv {cnv_file.name} \
+                                                        --snap_probes {snap_probes} \
+                                                        --cnv_pk {cnv.pk} \
+                                                        --band s3://canvas/analysis_files/GSA-Cyto/hg19_chrom_band.txt \
                                                         -c {nfc.name} \
                                                         -profile docker',
                     shell=True,
@@ -1482,7 +1455,7 @@ def cnv_edit(request):
                     f"ssh canvas@{HOST_IP} 'tsp -f -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
                                             -f /home/canvas/canvas/docker-compose_prod.yaml \
                                             exec canvas \
-                                            python manage.py associate_files --pdf {chip_id} canvas'",
+                                            python manage.py associate_files --cnv {cnv.pk} {chip_id} canvas'",
                     shell=True,
                 )
 

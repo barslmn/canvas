@@ -29,9 +29,12 @@
                     {% endif %}
                 </div>
                 <div class="cnv-controls">
-                    <select name="type" class="cnv-type-select" id="type-{{ roi|slugify }}">
-                        <option value="deletion">Deletion</option>
-                        <option value="duplication">Duplication</option>
+                    <select name="copy_number" class="cnv-type-select" id="copy-number-{{ roi|slugify }}">
+                        <option value="0">Copy Number 0</option>
+                        <option value="1">Copy Number 1</option>
+                        <option value="2">Copy Number 2</option>
+                        <option value="3">Copy Number 3</option>
+                        <option value="4">Copy Number 4</option>
                     </select>
                     <label class="snap-probes-label">
                         <input type="checkbox" name="snap_probes" id="snap-{{ roi|slugify }}" checked>
@@ -42,7 +45,7 @@
                             hx-vals='{
                                 "roi": "{{ roi }}",
                                 "chipsample_pk": "{{ chipsample.pk }}",
-                                "type": "#type-{{ roi|slugify }}",
+                                "copy_number": "#copy-number-{{ roi|slugify }}",
                                 "snap_probes": "#snap-{{ roi|slugify }}"
                             }'
                             hx-target="#cnv-edit-result">
