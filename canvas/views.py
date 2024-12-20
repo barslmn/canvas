@@ -1396,6 +1396,7 @@ def cnv_edit(request):
             cnv = CNV.objects.create(
                 chipsample=chipsample,
                 user=request.user,
+                cnv_json={"user_cnv": roi, "user_copy_number": cn},
             )
 
             chip_id = chipsample.chip.chip_id
