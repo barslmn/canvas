@@ -36,6 +36,30 @@
           max: 1,
           height: 200,
           tracks: [
+            {% for bedgraph in user_cnv_pos_bedgraphs %}
+            {
+              name: 'CNV LRR',
+              type: 'wig',
+              format: 'bedgraph',
+              url: '{{ bedgraph.bedgraph.url }}',
+              graphType: 'bar',
+              windowFunction: 'min',
+              color: "rgb(53, 255, 53)",
+            },
+            {% endfor %}
+
+            {% for bedgraph in user_cnv_neg_bedgraphs %}
+            {
+              name: 'CNV LRR',
+              type: 'wig',
+              format: 'bedgraph',
+              url: '{{ bedgraph.bedgraph.url }}',
+              graphType: 'bar',
+              windowFunction: 'min',
+              color: "rgb(53, 255, 53)",
+            },
+            {% endfor %}
+
             {
               name: 'CNV LRR',
               type: 'wig',
@@ -86,6 +110,20 @@
           max: 1,
           height: 200,
           tracks: [
+            {% for bedgraph in user_cnv_pos_bedgraphs %}
+            {
+              name: 'CNV BAF',
+              type: 'wig',
+              format: 'bedgraph',
+              url: '{{ bedgraph.bedgraph.url }}',
+              min: 0,
+              max: 1,
+              graphType: 'bar',
+              windowFunction: 'max',
+              color: "rgb(255, 153, 53)",
+            },
+            {% endfor %}
+
             {
               name: 'CNV BAF',
               type: 'wig',

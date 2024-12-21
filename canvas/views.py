@@ -952,6 +952,8 @@ def chipsample_tab_content(request):
     cnv_pos_bedgraph = None
     cnv_neg_bedgraph = None
     lrr_smooth_bedgraph = None
+    user_cnv_pos_bedgraphs = []
+    user_cnv_neg_bedgraphs = []
 
     for bedgraph in bedgraphs:
         if bedgraph.bedgraph_type == "LRR":
@@ -959,12 +961,18 @@ def chipsample_tab_content(request):
         elif bedgraph.bedgraph_type == "BAF":
             baf_bedgraph = bedgraph
         elif bedgraph.bedgraph_type == "CNV_pos":
-            cnv_pos_bedgraph = bedgraph
+            if len(bedgraph.bedgraph_file.name.split("_")) == 4:
+                cnv_pos_bedgraph = bedgraph
+            elif len(bedgraph.bedgraph_file.name.split("_")) == 5:
+                user_cnv_pos_bedgraphs.append(bedgraph)
         elif bedgraph.bedgraph_type == "CNV_neg":
-            cnv_neg_bedgraph = bedgraph
+            if len(bedgraph.bedgraph_file.name.split("_")) == 4:
+                cnv_neg_bedgraph = bedgraph
+            elif len(bedgraph.bedgraph_file.name.split("_")) == 5:
+                user_cnv_neg_bedgraphs.append(bedgraph)
         elif bedgraph.bedgraph_type == "LRR_smooth":
             lrr_smooth_bedgraph = bedgraph
-
+        
     return render(
         request,
         "canvas/partials/chipsample_tab_content.html",
@@ -975,6 +983,8 @@ def chipsample_tab_content(request):
             "cnv_pos_bedgraph": cnv_pos_bedgraph,
             "cnv_neg_bedgraph": cnv_neg_bedgraph,
             "lrr_smooth_bedgraph": lrr_smooth_bedgraph,
+            "user_cnv_pos_bedgraphs": user_cnv_pos_bedgraphs,
+            "user_cnv_neg_bedgraphs": user_cnv_neg_bedgraphs,
             "cnvs": json.dumps(cnvs),
         },
     )
