@@ -1512,7 +1512,7 @@ def cnv_edit(request):
                 with tempfile.NamedTemporaryFile(delete=False, mode="w") as script:
                     script.write(
                         f"""#!/bin/bash
-export TS_SOCKET="~/ts_cnv_edit.socket"
+export TS_SOCKET="/home/canvas/ts/ts_cnv_edit.socket"
 mkdir {label} && cd {label}
 tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --chip_id {chip_id} \\
