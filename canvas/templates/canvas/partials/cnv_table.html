@@ -345,6 +345,14 @@ var classificationColors = {
 };
 
 function updatePivotTable() {
+    const pivotDiv = document.getElementById('cnv-pivot-{{ chipsample.pk }}');
+    
+    // Check if pivot div exists, if not, wait and try again
+    if (!pivotDiv) {
+        setTimeout(updatePivotTable, 100); // Try again in 100ms
+        return;
+    }
+
     const data = table.getData();
     const counts = {};
     
@@ -362,7 +370,6 @@ function updatePivotTable() {
     });
 
     // Update the display
-    const pivotDiv = document.getElementById('cnv-pivot-{{ chipsample.pk }}');
     pivotDiv.innerHTML = Object.keys(classificationOrder)
         .sort((a, b) => classificationOrder[a] - classificationOrder[b])
         .map(classification => {
