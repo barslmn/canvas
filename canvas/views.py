@@ -1436,11 +1436,6 @@ def cnv_edit(request):
         roi = request.POST.get("roi")  # Format: chr:start-end
         cn = request.POST.get("copy_number", "2")  # Default to CN=2 (normal)
         snap_probes = request.POST.get("snap_probes", "on").lower() == "on"
-        print(request.POST)
-        print(chipsample_pk)
-        print(roi)
-        print(cn)
-        print(snap_probes)
 
         try:
             # Parse ROI
@@ -1516,7 +1511,7 @@ def cnv_edit(request):
                     f"ssh canvas@{HOST_IP} 'tsp -f -D $(tsp -l | grep {label} | cut -d\" \" -f1) docker compose \
                                             -f /home/canvas/canvas/docker-compose_prod.yaml \
                                             exec canvas \
-                                            python manage.py associate_files --cnv {cnv.pk} {chip_id} canvas'",
+                                            python manage.py associate_files --cnv_pk {cnv.pk} {chip_id} canvas'",
                     shell=True,
                 )
 

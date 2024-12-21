@@ -20,17 +20,14 @@ class Command(BaseCommand):
         parser.add_argument(
             "--classification_ids", nargs="+", type=int, help="classification ids"
         )
-        parser.add_argument(
-            "--cnv", type=int, help="CNV ID to process specifically"
-        )
+        parser.add_argument("--cnv_pk", type=int, help="CNV ID to process specifically")
 
     def handle(self, *args, **options):
         chip_id = options["chip_id"]
         bucket_name = options["bucket_name"]
         pdf = options["pdf"]
         classification_ids = options["classification_ids"]
-        cnv_id = options["cnv"]
-
+        cnv_pk = options["cnv_pk"]
 
         # MinIO client setup
         client = Minio(
@@ -51,12 +48,16 @@ class Command(BaseCommand):
             client.fget_object(bucket_name, object_name, tmp_file.name)
             return tmp_file.name
 
-        def extract_position(filename):
+        def extract_position(filename, cnv_pk=None):
             """Extracts position from filenames using regex like 'R02C03' or 'R01C04'."""
             match = re.search(r"R\d{2}C\d{2}", filename)
-            return match.group(0) if match else None
+            if cnv_pk:
+                if str(cnv_pk) in filename:
+                    return f"{match.group(0)}_{cnv_pk}" if match else None
+            else:
+                return match.group(0) if match else None
 
-        def gather_scoresheets():
+        def gather_scoresheets(cnv_pk=None):
             """
             Returns a dictionary of scoresheets in the format:
             {
@@ -65,12 +66,12 @@ class Command(BaseCommand):
             """
             files = list_files(f"chip_data/{chip_id}/ClassifyCNV/")
             return {
-                extract_position(file): download_file(file)
+                extract_position(file, cnv_pk): download_file(file)
                 for file in files
                 if file.endswith("Scoresheet.txt") and extract_position(file)
             }
 
-        def gather_cnvs():
+        def gather_cnvs(cnv_pk=None):
             """
             Returns a dictionary of CNV files in the format:
             {
@@ -79,7 +80,7 @@ class Command(BaseCommand):
             """
             files = list_files(f"chip_data/{chip_id}/cnvs/")
             return {
-                extract_position(file): download_file(file)
+                extract_position(file, cnv_pk): download_file(file)
                 for file in files
                 if "iscn" in file and extract_position(file)
             }
@@ -211,31 +212,41 @@ class Command(BaseCommand):
                             )
                         )
 
-        if cnv_id:
+        if cnv_pk:
             try:
-                cnv = CNV.objects.get(pk=cnv_id)
+                cnv = CNV.objects.get(pk=cnv_pk)
                 chipsample = cnv.chipsample
                 position = chipsample.position
+                position = f"{position}_{cnv_pk}"
 
-                scoresheet_files = {
-                    position: next(iter(gather_scoresheets().get(position, [])), None)
-                }
-                cnv_files = {
-                    position: next(iter(gather_cnvs().get(position, [])), None)
-                }
+                scoresheet_files = gather_scoresheets(cnv_pk)
+                cnv_files = gather_cnvs(cnv_pk)
 
                 if scoresheet_files[position] and cnv_files[position]:
-                    cnv_data = process_cnv_file(cnv_files[position])
-                    scoresheet_data = process_scoresheet_file(scoresheet_files[position])
+                    cnv_data = {}
+                    with open(cnv_files[position], "r") as f:
+                        for line in f:
+                            parts = line.strip().split()
+                            chr_start_end, cn, iscn = parts
+                            cnv_data[chr_start_end] = {
+                                "iscn": iscn,
+                                "state_info": cn,
+                            }
+
+                    scoresheet_data = process_scoresheet_file(
+                        scoresheet_files[position]
+                    )
 
                     for variant_id, cnv_dict in cnv_data.items():
                         score_dict = scoresheet_data.get(variant_id, {})
                         merged_dict = {**cnv_dict, **score_dict}
                         cnv.variant_id = variant_id
-                        cnv.cnv_json = merged_dict
+                        cnv.cnv_json.update(merged_dict)
                         cnv.save()
                         self.stdout.write(
-                            self.style.SUCCESS(f"Updated CNV {variant_id} for {chipsample}")
+                            self.style.SUCCESS(
+                                f"Updated CNV {variant_id} for {chipsample}"
+                            )
                         )
 
                 bedgraphs = gather_bedgraphs()
@@ -258,9 +269,7 @@ class Command(BaseCommand):
                 return
 
             except CNV.DoesNotExist:
-                self.stdout.write(
-                    self.style.ERROR(f"CNV with ID {cnv_id} not found")
-                )
+                self.stdout.write(self.style.ERROR(f"CNV with ID {cnv_pk} not found"))
                 return
         # Use the associate_pdfs function only if --pdf flag is provided
         if pdf:
