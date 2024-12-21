@@ -85,7 +85,7 @@ class Command(BaseCommand):
                 if "iscn" in file and extract_position(file)
             }
 
-        def gather_bedgraphs():
+        def gather_bedgraphs(cnv_pk=None):
             """
             Returns a dictionary of BedGraph file paths in the format:
             {
@@ -95,7 +95,7 @@ class Command(BaseCommand):
             files = list_files(f"chip_data/{chip_id}/bedgraphs/")
             bedgraph_dict = defaultdict(list)  # Initialize a defaultdict of lists
             for file in files:
-                position = extract_position(file)
+                position = extract_position(file, cnv_pk)
                 if position:
                     bedgraph_dict[position].append(
                         file
@@ -254,7 +254,7 @@ class Command(BaseCommand):
                             )
                         )
 
-                bedgraphs = gather_bedgraphs()
+                bedgraphs = gather_bedgraphs(cnv_pk)
                 if position in bedgraphs:
                     for bedgraph_path in bedgraphs[position]:
                         bedgraph_type = bedgraph_path.split(".")[1]
