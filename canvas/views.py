@@ -1181,6 +1181,7 @@ def create_report(request):
             json.dump(cnvs, cnv_file)
             cnv_file.flush()
             cnv_file_path = cnv_file.name
+            subprocess.run(f"scp {cnv_file_path} canvas@{HOST_IP}:/tmp", shell=True)
 
         with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
             nfc.write(
@@ -1199,6 +1200,7 @@ def create_report(request):
             )
             nfc.flush()
             nfc_path = nfc.name
+            subprocess.run(f"scp {nfc_path} canvas@{HOST_IP}:/tmp", shell=True)
 
         # Create the script file
         with tempfile.NamedTemporaryFile(
@@ -1229,6 +1231,7 @@ tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
             )
             script_file.flush()
             script_path = script_file.name
+            subprocess.run(f"scp {script_path} canvas@{HOST_IP}:/tmp", shell=True)
 
         # Transfer files to host
         for local_path in [cnv_file_path, nfc_path, script_path]:
