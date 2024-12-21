@@ -961,14 +961,14 @@ def chipsample_tab_content(request):
         elif bedgraph.bedgraph_type == "BAF":
             baf_bedgraph = bedgraph
         elif bedgraph.bedgraph_type == "CNV_pos":
-            if len(bedgraph.bedgraph_file.name.split("_")) == 4:
+            if len(bedgraph.bedgraph.name.split("_")) == 4:
                 cnv_pos_bedgraph = bedgraph
-            elif len(bedgraph.bedgraph_file.name.split("_")) == 5:
+            elif len(bedgraph.bedgraph.name.split("_")) == 5:
                 user_cnv_pos_bedgraphs.append(bedgraph)
         elif bedgraph.bedgraph_type == "CNV_neg":
-            if len(bedgraph.bedgraph_file.name.split("_")) == 4:
+            if len(bedgraph.bedgraph.name.split("_")) == 4:
                 cnv_neg_bedgraph = bedgraph
-            elif len(bedgraph.bedgraph_file.name.split("_")) == 5:
+            elif len(bedgraph.bedgraph.name.split("_")) == 5:
                 user_cnv_neg_bedgraphs.append(bedgraph)
         elif bedgraph.bedgraph_type == "LRR_smooth":
             lrr_smooth_bedgraph = bedgraph
