@@ -693,7 +693,10 @@ def start_run(chip_id):
                     f"{chip_id}_{cs.position}\t{cs.sample.protocol_id}\t{cs.sample.institution.name}\n"
                 )
             ss.flush()
-            samplesheet_path = ss.name
+            subprocess.run(
+                f"scp {ss.name} canvas@{HOST_IP}:/tmp",
+                shell=True,
+            )
 
         # Create the Nextflow configuration file
         with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
@@ -712,14 +715,19 @@ profiles {{
 }}"""
             )
             nfc.flush()
-            nextflow_config_path = nfc.name
+            subprocess.run(
+                f"scp {nfc.name} canvas@{HOST_IP}:/tmp",
+                shell=True,
+            )
 
         # Create the script to execute on the host
         with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as script:
             script.write(
                 f"""#!/bin/bash
-export TS_SOCKET="~/ts_start_run.socket"
-mkdir {label} && cd {label}
+export TS_SOCKET="/home/canvas/ts/ts_start_run.socket"
+job_dir="/home/canvas/jobs/{label}"
+mkdir -p "$job_dir"
+cd "$job_dir"
 tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --chip_id {chip_id} \\
     --bpm s3://canvas/{chipType.bpm.name} \\
@@ -729,9 +737,8 @@ tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --pfb s3://canvas/{chipType.pfb.name} \\
     --band s3://canvas/{chipType.band.name} \\
     --tex_template canvas-pipeline/template/base_template.tex \\
-    --output_dir canvas-pipeline-demo-results/ \\
-    --samplesheet /tmp/samplesheet.tsv \\
-    -c /tmp/nextflow.config \\
+    --samplesheet {ss.name} \\
+    -c {nfc.name} \\
     -with-report {chip_id}_{label}.html \\
     -profile docker
 
@@ -742,18 +749,14 @@ tsp -D $(tsp -l | grep {label} | cut -d' ' -f1) docker compose \\
 """
             )
             script.flush()
-            script_path = script.name
-
-        # Transfer the files to the host
-        for file_path in [samplesheet_path, nextflow_config_path, script_path]:
             subprocess.run(
-                f"scp {file_path} canvas@{HOST_IP}:/tmp",
+                f"scp {script.name} canvas@{HOST_IP}:/tmp",
                 shell=True,
             )
 
         # Execute the script on the host
         subprocess.run(
-            f"ssh canvas@{HOST_IP} 'chmod +x {script_path} && {script_path}'",
+            f"ssh canvas@{HOST_IP} 'chmod +x {script.name} && {script.name}'",
             shell=True,
         )
 
@@ -1180,8 +1183,7 @@ def create_report(request):
         with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as cnv_file:
             json.dump(cnvs, cnv_file)
             cnv_file.flush()
-            cnv_file_path = cnv_file.name
-            subprocess.run(f"scp {cnv_file_path} canvas@{HOST_IP}:/tmp", shell=True)
+            subprocess.run(f"scp {cnv_file.name} canvas@{HOST_IP}:/tmp", shell=True)
 
         with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
             nfc.write(
@@ -1199,28 +1201,26 @@ def create_report(request):
     }}"""
             )
             nfc.flush()
-            nfc_path = nfc.name
-            subprocess.run(f"scp {nfc_path} canvas@{HOST_IP}:/tmp", shell=True)
+            subprocess.run(f"scp {nfc.name} canvas@{HOST_IP}:/tmp", shell=True)
 
         # Create the script file
-        with tempfile.NamedTemporaryFile(
-            delete_on_close=False, mode="w"
-        ) as script_file:
-            script_file.write(
+        with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as script:
+            script.write(
                 f"""#!/bin/bash
-export TS_SOCKET="~/ts_create_report.socket"
-mkdir {label}
-cd {label}
+export TS_SOCKET="/home/canvas/ts/ts_create_report.socket"
+job_dir="/home/canvas/jobs/{label}"
+mkdir -p "$job_dir"
+cd "$job_dir"
 tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --chip_id {chip_id} \\
     --chip_type {chip_type} \\
     --position {chipsample.position} \\
     --tex_template canvas-pipeline/template/base_template.tex \\
-    --cnvs {cnv_file_path} \\
+    --cnvs {cnv_file.name} \\
     --institute "{chipsample.sample.institution.name}" \\
     --protocol_id "{chipsample.sample.protocol_id}" \\
     --version {version} \\
-    -c {nfc_path} \\
+    -c {nfc.name} \\
     -with-report {chip_id}_{label}.html \\
     -profile docker
 tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
@@ -1229,17 +1229,12 @@ tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
     {"--classification_ids " + " ".join(map(str, classification_ids)) if classification_ids else ""}
             """
             )
-            script_file.flush()
-            script_path = script_file.name
-            subprocess.run(f"scp {script_path} canvas@{HOST_IP}:/tmp", shell=True)
-
-        # Transfer files to host
-        for local_path in [cnv_file_path, nfc_path, script_path]:
-            subprocess.run(f"scp {local_path} canvas@{HOST_IP}:/tmp", shell=True)
+            script.flush()
+            subprocess.run(f"scp {script.name} canvas@{HOST_IP}:/tmp", shell=True)
 
         # Execute the script on the host
         subprocess.run(
-            f"ssh canvas@{HOST_IP} 'chmod +x {script_path} && {script_path}'",
+            f"ssh canvas@{HOST_IP} 'chmod +x {script.name} && {script.name}'",
             shell=True,
         )
 
@@ -1484,15 +1479,15 @@ def cnv_edit(request):
                 label = secrets.token_urlsafe(6)
 
                 # Write CNV data to temporary file
-                cnv_file_path = None
                 with tempfile.NamedTemporaryFile(delete=False, mode="w") as cnv_file:
-                    cnv_file_path = cnv_file.name
                     cnv_file.write(f"{chromosome}\t{start}\t{end}\t{cn}\n")
+                    subprocess.run(
+                        f"scp {cnv_file.name} canvas@{HOST_IP}:/tmp",
+                        shell=True,
+                    )
 
                 # Create Nextflow config file
-                nfc_file_path = None
                 with tempfile.NamedTemporaryFile(delete=False, mode="w") as nfc:
-                    nfc_file_path = nfc.name
                     nfc.write(
                         f"""aws {{
     access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
@@ -1507,23 +1502,24 @@ def cnv_edit(request):
     }}
     }}"""
                     )
+                    subprocess.run(
+                        f"scp {nfc.name} canvas@{HOST_IP}:/tmp",
+                        shell=True,
+                    )
 
-                # Write commands to script file
-                script_path = None
-                with tempfile.NamedTemporaryFile(delete=False, mode="w") as script_file:
-                    script_path = script_file.name
-                    script_file.write(
+                with tempfile.NamedTemporaryFile(delete=False, mode="w") as script:
+                    script.write(
                         f"""#!/bin/bash
 export TS_SOCKET="~/ts_cnv_edit.socket"
 mkdir {label} && cd {label}
 tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --chip_id {chip_id} \\
     --position {chipsample.position} \\
-    --cnv_bed {cnv_file_path} \\
+    --cnv_bed {cnv_file.name} \\
     --snap_probes {snap_probes} \\
     --cnv_pk {cnv.pk} \\
     --band s3://canvas/analysis_files/GSA-Cyto/hg19_chrom_band.txt \\
-    -c {nfc_file_path} \\
+    -c {nfc.name} \\
     -profile docker
 tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
     -f /home/canvas/canvas/docker-compose_prod.yaml \\
@@ -1532,16 +1528,14 @@ tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
 """
                     )
 
-                # Transfer the files to the host
-                for file_path in [cnv_file_path, nfc_file_path, script_path]:
                     subprocess.run(
-                        f"scp {file_path} canvas@{HOST_IP}:/tmp",
+                        f"scp {script.name} canvas@{HOST_IP}:/tmp",
                         shell=True,
                     )
 
                 # Transfer and execute script
                 subprocess.run(
-                    f"ssh canvas@{HOST_IP} 'chmod +x {script_path} && {script_path}'",
+                    f"ssh canvas@{HOST_IP} 'chmod +x {script.name} && {script.name}'",
                     shell=True,
                 )
 
