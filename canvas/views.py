@@ -1254,7 +1254,9 @@ tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
         "button": "true",
         "chipsample": chipsample,
     }
-    response = render(request, "canvas/partials/report_list.html", context=context)
+    response = render(
+        request, "canvas/components/create_report_button.html", context=context
+    )
     response["HX-Trigger"] = f"triggerReportUpdate{chipsample_pk}"
     return response
 
