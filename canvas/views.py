@@ -725,6 +725,7 @@ profiles {{
             script.write(
                 f"""#!/bin/bash
 export TS_SOCKET="/home/canvas/ts/ts_start_run.socket"
+export NXF_WORK="/home/canvas/work"
 job_dir="/home/canvas/jobs/{label}"
 mkdir -p "$job_dir"
 cd "$job_dir"
@@ -1513,7 +1514,9 @@ def cnv_edit(request):
                     script.write(
                         f"""#!/bin/bash
 export TS_SOCKET="/home/canvas/ts/ts_cnv_edit.socket"
-mkdir {label} && cd {label}
+job_dir="/home/canvas/jobs/{label}"
+mkdir -p "$job_dir"
+cd "$job_dir"
 tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --chip_id {chip_id} \\
     --position {chipsample.position} \\

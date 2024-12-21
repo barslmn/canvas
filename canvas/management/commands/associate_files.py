@@ -238,6 +238,7 @@ class Command(BaseCommand):
                     )
 
                     for variant_id, cnv_dict in cnv_data.items():
+                        variant_id = variant_id.replace(":", "_").replace("-", "_")
                         score_dict = scoresheet_data.get(variant_id, {})
                         merged_dict = {**cnv_dict, **score_dict}
                         cnv.variant_id = variant_id
