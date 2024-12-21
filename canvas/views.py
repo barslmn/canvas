@@ -1215,7 +1215,7 @@ tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --chip_id {chip_id} \\
     --chip_type {chip_type} \\
     --position {chipsample.position} \\
-    --tex_template canvas-pipeline/template/base_template.tex \\
+    --tex_template /home/canvas/canvas-pipeline/template/base_template.tex \\
     --cnvs {cnv_file.name} \\
     --institute "{chipsample.sample.institution.name}" \\
     --protocol_id "{chipsample.sample.protocol_id}" \\
