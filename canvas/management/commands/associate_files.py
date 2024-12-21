@@ -31,57 +31,6 @@ class Command(BaseCommand):
         classification_ids = options["classification_ids"]
         cnv_id = options["cnv"]
 
-        if cnv_id:
-            try:
-                cnv = CNV.objects.get(pk=cnv_id)
-                chipsample = cnv.chipsample
-                position = chipsample.position
-
-                scoresheet_files = {
-                    position: next(iter(gather_scoresheets().get(position, [])), None)
-                }
-                cnv_files = {
-                    position: next(iter(gather_cnvs().get(position, [])), None)
-                }
-
-                if scoresheet_files[position] and cnv_files[position]:
-                    cnv_data = process_cnv_file(cnv_files[position])
-                    scoresheet_data = process_scoresheet_file(scoresheet_files[position])
-
-                    for variant_id, cnv_dict in cnv_data.items():
-                        score_dict = scoresheet_data.get(variant_id, {})
-                        merged_dict = {**cnv_dict, **score_dict}
-                        cnv.variant_id = variant_id
-                        cnv.cnv_json = merged_dict
-                        cnv.save()
-                        self.stdout.write(
-                            self.style.SUCCESS(f"Updated CNV {variant_id} for {chipsample}")
-                        )
-
-                bedgraphs = gather_bedgraphs()
-                if position in bedgraphs:
-                    for bedgraph_path in bedgraphs[position]:
-                        bedgraph_type = bedgraph_path.split(".")[1]
-                        if bedgraph_type in dict(BedGraph.bedgraph_types):
-                            bg, created = BedGraph.objects.get_or_create(
-                                chipsample=chipsample,
-                                bedgraph_type=bedgraph_type,
-                                bedgraph=bedgraph_path,
-                            )
-                            if created:
-                                self.stdout.write(
-                                    self.style.SUCCESS(
-                                        f"Saved BedGraph {bedgraph_path} to {chipsample}"
-                                    )
-                                )
-
-                return
-
-            except CNV.DoesNotExist:
-                self.stdout.write(
-                    self.style.ERROR(f"CNV with ID {cnv_id} not found")
-                )
-                return
 
         # MinIO client setup
         client = Minio(
@@ -262,6 +211,57 @@ class Command(BaseCommand):
                             )
                         )
 
+        if cnv_id:
+            try:
+                cnv = CNV.objects.get(pk=cnv_id)
+                chipsample = cnv.chipsample
+                position = chipsample.position
+
+                scoresheet_files = {
+                    position: next(iter(gather_scoresheets().get(position, [])), None)
+                }
+                cnv_files = {
+                    position: next(iter(gather_cnvs().get(position, [])), None)
+                }
+
+                if scoresheet_files[position] and cnv_files[position]:
+                    cnv_data = process_cnv_file(cnv_files[position])
+                    scoresheet_data = process_scoresheet_file(scoresheet_files[position])
+
+                    for variant_id, cnv_dict in cnv_data.items():
+                        score_dict = scoresheet_data.get(variant_id, {})
+                        merged_dict = {**cnv_dict, **score_dict}
+                        cnv.variant_id = variant_id
+                        cnv.cnv_json = merged_dict
+                        cnv.save()
+                        self.stdout.write(
+                            self.style.SUCCESS(f"Updated CNV {variant_id} for {chipsample}")
+                        )
+
+                bedgraphs = gather_bedgraphs()
+                if position in bedgraphs:
+                    for bedgraph_path in bedgraphs[position]:
+                        bedgraph_type = bedgraph_path.split(".")[1]
+                        if bedgraph_type in dict(BedGraph.bedgraph_types):
+                            bg, created = BedGraph.objects.get_or_create(
+                                chipsample=chipsample,
+                                bedgraph_type=bedgraph_type,
+                                bedgraph=bedgraph_path,
+                            )
+                            if created:
+                                self.stdout.write(
+                                    self.style.SUCCESS(
+                                        f"Saved BedGraph {bedgraph_path} to {chipsample}"
+                                    )
+                                )
+
+                return
+
+            except CNV.DoesNotExist:
+                self.stdout.write(
+                    self.style.ERROR(f"CNV with ID {cnv_id} not found")
+                )
+                return
         # Use the associate_pdfs function only if --pdf flag is provided
         if pdf:
             associate_pdfs()

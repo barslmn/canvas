@@ -967,8 +967,11 @@ def chipsample_sidebar_content(request):
     chipsample_pk = request.GET.get("chipsample_pk")
     chipsample = ChipSample.objects.get(id=chipsample_pk)
     return render(
-        request, "canvas/partials/chipsample_sidebar_content.html", {"chipsample": chipsample}
+        request,
+        "canvas/partials/chipsample_sidebar_content.html",
+        {"chipsample": chipsample},
     )
+
 
 @login_required
 def sample_edit(request):
@@ -1432,13 +1435,18 @@ def cnv_edit(request):
         chipsample_pk = request.POST.get("chipsample_pk")
         roi = request.POST.get("roi")  # Format: chr:start-end
         cn = request.POST.get("copy_number", "2")  # Default to CN=2 (normal)
-        snap_probes = request.POST.get("snap_probes", "true").lower() == "true"
-        
+        snap_probes = request.POST.get("snap_probes", "on").lower() == "on"
+        print(request.POST)
+        print(chipsample_pk)
+        print(roi)
+        print(cn)
+        print(snap_probes)
+
         try:
             # Parse ROI
             chromosome, positions = roi.split(":")
             start, end = map(int, positions.split("-"))
-            
+
             # Create new CNV
             chipsample = ChipSample.objects.get(id=chipsample_pk)
             cnv = CNV.objects.create(
@@ -1455,7 +1463,9 @@ def cnv_edit(request):
                 label = secrets.token_urlsafe(6)
 
                 # Write CNV data to temporary file
-                with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as cnv_file:
+                with tempfile.NamedTemporaryFile(
+                    delete_on_close=False, mode="w"
+                ) as cnv_file:
                     cnv_file.write(f"{chromosome}\t{start}\t{end}\t{cn}\n")
                     cnv_file.flush()
                     subprocess.run(
@@ -1464,7 +1474,9 @@ def cnv_edit(request):
                     )
 
                 # Create nextflow config file
-                with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
+                with tempfile.NamedTemporaryFile(
+                    delete_on_close=False, mode="w"
+                ) as nfc:
                     nfc.write(
                         f"""aws {{
     access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
@@ -1487,15 +1499,15 @@ def cnv_edit(request):
 
                 # Run the pipeline with only required parameters
                 subprocess.run(
-                    f'ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
+                    f"ssh canvas@{HOST_IP} tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \
                                                         --chip_id {chip_id} \
                                                         --position {chipsample.position} \
-                                                        --cnv {cnv_file.name} \
+                                                        --cnv_bed {cnv_file.name} \
                                                         --snap_probes {snap_probes} \
                                                         --cnv_pk {cnv.pk} \
                                                         --band s3://canvas/analysis_files/GSA-Cyto/hg19_chrom_band.txt \
                                                         -c {nfc.name} \
-                                                        -profile docker',
+                                                        -profile docker",
                     shell=True,
                 )
 
@@ -1508,22 +1520,28 @@ def cnv_edit(request):
                     shell=True,
                 )
 
-            return render(request, "canvas/partials/cnv_edit_success.html", {
-                "success": True,
-                "message": "CNV successfully added",
-                "cnv": json.dumps(cnv.cnv_json)
-            })
-            
-        except Exception as e:
-            return render(request, "canvas/partials/cnv_edit_success.html", {
-                "success": False,
-                "message": str(e)
-            })
+            return render(
+                request,
+                "canvas/partials/cnv_edit_success.html",
+                {
+                    "success": True,
+                    "message": "CNV successfully added",
+                    "cnv": json.dumps(cnv.cnv_json),
+                },
+            )
 
-    return render(request, "canvas/partials/cnv_edit_success.html", {
-        "success": False,
-        "message": "Invalid request method"
-    })
+        except Exception as e:
+            return render(
+                request,
+                "canvas/partials/cnv_edit_success.html",
+                {"success": False, "message": str(e)},
+            )
+
+    return render(
+        request,
+        "canvas/partials/cnv_edit_success.html",
+        {"success": False, "message": "Invalid request method"},
+    )
 
 
 def download_samples(request):
