@@ -203,7 +203,11 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             headerFilterFunc: minMaxFilterFunction,
             headerFilterLiveFilter: false,
             mutator: function(value, data, type, params, component) {
-                return parseInt(value.replace(/[^0-9]/g, ''), 10);
+                try {
+                    return parseInt(value.replace(/[^0-9]/g, ''), 10);
+                } catch (e) {
+                    return undefined;
+                }
             }
         },
         {
@@ -213,7 +217,11 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             headerFilterFunc: minMaxFilterFunction,
             headerFilterLiveFilter: false,
             mutator: function(value, data, type, params, component) {
-                return parseInt(value.replace(/[^0-9]/g, ''), 10);
+                try {
+                    return parseInt(value.replace(/[^0-9]/g, ''), 10);
+                } catch (e) {
+                    return undefined;
+                }
             }
         },
         {
@@ -254,7 +262,11 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
                 max:100
             },
             mutator: function(value, data, type, params, component) {
-                return parseFloat(value.replace(/[^0-9.-]+/g, ''));
+                try {
+                    return parseFloat(value.replace(/[^0-9.-]+/g, ''));
+                } catch (e) {
+                    return undefined;
+                }
             }
         },
         {

@@ -227,10 +227,15 @@ class Command(BaseCommand):
                     with open(cnv_files[position], "r") as f:
                         for line in f:
                             parts = line.strip().split()
-                            chr_start_end, cn, iscn = parts
-                            cnv_data[chr_start_end] = {
+                            variant_id, cn, numsnp, iscn = parts
+                            start = variant_id.split("_")[1]
+                            end = variant_id.split("_")[2]
+                            length = int(end) - int(start)
+                            cnv_data[variant_id] = {
                                 "iscn": iscn,
                                 "state_info": cn,
+                                "length_info": length,
+                                "numsnp_info": numsnp,
                             }
 
                     scoresheet_data = process_scoresheet_file(
@@ -238,7 +243,6 @@ class Command(BaseCommand):
                     )
 
                     for variant_id, cnv_dict in cnv_data.items():
-                        variant_id = variant_id.replace(":", "_").replace("-", "_")
                         score_dict = scoresheet_data.get(variant_id, {})
                         merged_dict = {**cnv_dict, **score_dict}
                         cnv.variant_id = variant_id
