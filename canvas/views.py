@@ -756,10 +756,6 @@ tsp -D $(tsp -l | grep {label} | cut -d' ' -f1) docker compose \\
             f"ssh canvas@{HOST_IP} 'chmod +x {script_path} && {script_path}'",
             shell=True,
         )
-        # Clean up the local temporary files
-        os.remove(samplesheet_path)
-        os.remove(nextflow_config_path)
-        os.remove(script_path)
 
 
 def get_samples_for_user(user, samples=None):
@@ -1243,11 +1239,6 @@ tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
             f"ssh canvas@{HOST_IP} 'chmod +x {script_path} && {script_path}'",
             shell=True,
         )
-
-        # Clean up temporary files
-        os.remove(cnv_file_path)
-        os.remove(nfc_path)
-        os.remove(script_path)
 
     context = {
         "reports": gather_reports(chipsample),
