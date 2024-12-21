@@ -1481,6 +1481,7 @@ def cnv_edit(request):
                 # Write CNV data to temporary file
                 with tempfile.NamedTemporaryFile(delete=False, mode="w") as cnv_file:
                     cnv_file.write(f"{chromosome}\t{start}\t{end}\t{cn}\n")
+                    cnv_file.flush()
                     subprocess.run(
                         f"scp {cnv_file.name} canvas@{HOST_IP}:/tmp",
                         shell=True,
@@ -1502,6 +1503,7 @@ def cnv_edit(request):
     }}
     }}"""
                     )
+                    nfc.flush()
                     subprocess.run(
                         f"scp {nfc.name} canvas@{HOST_IP}:/tmp",
                         shell=True,
@@ -1527,7 +1529,7 @@ tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
     python manage.py associate_files --cnv_pk {cnv.pk} {chip_id} canvas
 """
                     )
-
+                    script.flush()
                     subprocess.run(
                         f"scp {script.name} canvas@{HOST_IP}:/tmp",
                         shell=True,
