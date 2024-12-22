@@ -768,9 +768,7 @@ tsp -D $(tsp -l | grep {label} | cut -d' ' -f1) docker compose \\
         )
 
 
-def get_samples_for_user(user, samples=None):
-    if not samples:
-        samples = Sample.objects.all()
+def get_samples_for_user(user, samples):
     user_groups = user.groups.all()
     if user.is_staff:
         samples = samples
@@ -779,10 +777,7 @@ def get_samples_for_user(user, samples=None):
     return samples
 
 
-def get_chips_for_user(user, chips=None):
-    if not chips:
-        chips = Chip.objects.all()
-
+def get_chips_for_user(user, chips):
     user_groups = user.groups.all()
     if user.is_staff:
         chips = chips
@@ -793,10 +788,7 @@ def get_chips_for_user(user, chips=None):
     return chips
 
 
-def get_institutions_for_user(user, institutions=None):
-    if not institutions:
-        institutions = Institution.objects.all()
-
+def get_institutions_for_user(user, institutions):
     user_groups = user.groups.all()
     if user.is_staff:
         institutions = institutions
@@ -806,12 +798,12 @@ def get_institutions_for_user(user, institutions=None):
 
 
 def index(request):
-    samples = get_samples_for_user(request.user).order_by("-entry_date")
+    samples = get_samples_for_user(request.user, samples=Sample.objects.all()).order_by("-entry_date")
     len_samples = len(samples)
     sample_paginator = Paginator(samples, 12)
     samples = sample_paginator.get_page(1)
 
-    chips = get_chips_for_user(request.user).order_by("-entry_date")
+    chips = get_chips_for_user(request.user, chips=Chip.objects.all()).order_by("-entry_date")
     len_chips = len(chips)
     chip_paginator = Paginator(chips, 12)
     chips = chip_paginator.get_page(1)
@@ -1721,7 +1713,6 @@ def match_chip_samples(request):
                     if sample:
                         matches[position] = sample
 
-        print(matches)
         return render(
             request,
             "canvas/partials/chip_edit.html",

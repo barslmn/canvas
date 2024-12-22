@@ -1,5 +1,7 @@
 <div class="inline-flex" hx-indicator="this">
   <button
+    style="border-radius: 1em;"
+    class="btn btn-primary outline"
     hx-post="{% url 'create_report' %}"
     hx-vals="js:{
       'chipsample_pk': {{ chipsample.pk }},

@@ -1,12 +1,19 @@
 <div id="chipsample-sidebar-content-{{ chipsample.pk }}" x-show="activeTab === {{ chipsample.pk }}" x-transition>
-    <nav class="d-flex">
-        {% include 'canvas/components/reports.html' with button="true" %}
-        <button class="btn btn-primary" @click="get_rois()">Edit CNV</button>
-        {% include 'canvas/components/create_report_button.html' %}
+    <aside>
+        <nav class="d-flex">
+            <ul class="d-flex gap-3">
+                <li>
+                <button style="border-radius: 1em;" class="btn btn-primary outline" @click="get_rois()">Edit CNV</button>
+            </li>
+            <li>
+                {% include 'canvas/components/create_report_button.html' %}
+            </li>
+        </ul>
     </nav>
+    </aside>
     <div class="d-flex justify-content-start align-items-center gap-3 mb-3">
         <strong>CNV Count:</strong>
         <div id="cnv-pivot-{{ chipsample.pk }}" class="d-flex gap-3">
         </div>
     </div>
-  </div>
+</div>

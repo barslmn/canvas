@@ -5,7 +5,6 @@ register = template.Library()
 
 @register.simple_tag(name="sortedchip", takes_context=True)
 def sortedchip(context, chip, matches=None):
-    print(matches)
     user = context["user"]
 
     num_rows = chip.chip_type.rows
@@ -24,7 +23,6 @@ def sortedchip(context, chip, matches=None):
             chipsample = chipsamples.filter(position=position).first()
 
             if matches and position in matches:
-                print(matches[position])
                 # If we have a match for this position, use it
                 chipsample_cols.append(
                     {"position": position, "sample": matches[position]}
