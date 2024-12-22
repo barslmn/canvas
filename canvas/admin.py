@@ -3,8 +3,9 @@ from django.contrib import admin
 # Register your models here.
 from .models import (
     Lot,
-    Chip,
+    Genome,
     ChipType,
+    Chip,
     SampleType,
     Institution,
     Sample,
@@ -19,10 +20,14 @@ from .models import (
 )
 
 
+class GenomeAdmin(admin.ModelAdmin):
+    list_display = ["name"]
+    search_fields = ["name"]
+
+
 class ChipAdmin(admin.ModelAdmin):
     list_display = ["chip_id", "lot", "entry_date", "protocol_start_date", "scan_date"]
     search_fields = ["chip_id", "lot__lot_number"]
-
 
 class ChipTypeAdmin(admin.ModelAdmin):
     list_display = [
@@ -140,6 +145,7 @@ class ReportAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Lot)
+admin.site.register(Genome, GenomeAdmin)
 admin.site.register(Chip, ChipAdmin)
 admin.site.register(ChipType, ChipTypeAdmin)
 admin.site.register(SampleType, SampleTypeAdmin)
