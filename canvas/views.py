@@ -737,7 +737,7 @@ tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --fasta s3://canvas/{chip_type.genome.fasta.name} \\
     --pfb s3://canvas/{chip_type.pfb.name} \\
     --band s3://canvas/{chip_type.genome.band.name} \\
-    --tex_template canvas-pipeline/template/base_template.tex \\
+    --tex_template /home/canvas/canvas-pipeline/template/base_template.tex \\
     --samplesheet {ss.name} \\
     -c {nfc.name} \\
     -with-report {chip_id}_{label}.html \\
@@ -972,7 +972,7 @@ def chipsample_tab_content(request):
                 user_cnv_neg_bedgraphs.append(bedgraph)
         elif bedgraph.bedgraph_type == "LRR_smooth":
             lrr_smooth_bedgraph = bedgraph
-        
+
     return render(
         request,
         "canvas/partials/chipsample_tab_content.html",

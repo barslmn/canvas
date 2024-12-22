@@ -22,6 +22,7 @@ class Lot(models.Model):
 def analysis_files_directory_path(instance, filename):
     return f"analysis_files/{instance.name}/{filename}"
 
+
 def genome_directory_path(instance, filename):
     return f"genomes/{instance.name}/{filename}"
 
