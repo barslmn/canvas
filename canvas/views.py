@@ -661,6 +661,12 @@ acmg_gain = {
 }
 
 
+def get_safe_token(length=6):
+    """Generate a command-line safe token using only alphanumeric characters."""
+    alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
 def get_default_gateway_linux():
     """Read the default gateway directly from /proc."""
     with open("/proc/net/route") as fh:
@@ -682,7 +688,7 @@ def start_run(chip_id):
     if not settings.DEBUG:
         HOST_IP = get_default_gateway_linux()
         MINIO_IP = socket.gethostbyname("minio")
-        label = secrets.token_urlsafe(6)
+        label = get_safe_token(6)
         chip_type = Chip.objects.get(chip_id=chip_id).chip_type
 
         # Create the sample sheet file
@@ -810,7 +816,7 @@ def index(request):
     chip_paginator = Paginator(chips, 12)
     chips = chip_paginator.get_page(1)
 
-    label = secrets.token_urlsafe(6)
+    label = get_safe_token(6)
     return render(
         request,
         "canvas/index.html",
@@ -1188,7 +1194,7 @@ def create_report(request):
     if not settings.DEBUG:
         HOST_IP = get_default_gateway_linux()
         MINIO_IP = socket.gethostbyname("minio")
-        label = secrets.token_urlsafe(6)
+        label = get_safe_token(6)
 
         # Create temporary files
         with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as cnv_file:
@@ -1487,7 +1493,7 @@ def cnv_edit(request):
             if not settings.DEBUG:
                 HOST_IP = get_default_gateway_linux()
                 MINIO_IP = socket.gethostbyname("minio")
-                label = secrets.token_urlsafe(6)
+                label = get_safe_token(6)
 
                 # Write CNV data to temporary file
                 with tempfile.NamedTemporaryFile(delete=False, mode="w") as cnv_file:
