@@ -68,6 +68,57 @@
           {{ chipsample.position }}
         </span>
 
+      </header>
+
+      <strong>Scan Date:</strong>
+      <span> {{ chipsample.chip.scan_date }} </span>
+
+      <div
+        class="badge"
+        :class="{'pico-background-green-400': {{ chipsample.autosomal_call_rate }} > 0.99,
+                    'pico-background-red-500': {{ chipsample.autosomal_call_rate }} <= 0.99}"
+      >
+        <strong>Autosomal Call Rate:</strong>
+        {{ chipsample.autosomal_call_rate }}
+      </div>
+
+      <div
+        class="badge"
+        :class="{'pico-background-green-400': {{ chipsample.call_rate }} > 0.99,
+                    'pico-background-red-500': {{ chipsample.call_rate }} <= 0.99}"
+      >
+        <strong>Call Rate:</strong>
+        {{ chipsample.call_rate }}
+      </div>
+
+      <div
+        class="badge"
+        :class="{'pico-background-green-400': {{ chipsample.lrr_std_dev }} <= 0.15,
+                    'pico-background-red-500': {{ chipsample.lrr_std_dev }} > 0.15}"
+      >
+        <strong>LRR Std. Dev.:</strong>
+        {{ chipsample.lrr_std_dev }}
+      </div>
+
+      <div
+        class="badge"
+        :class="{'pico-background-green-400': '{{ chipsample.sex_estimate }}' === '{{ sample.sex }}',
+                    'pico-background-red-500': '{{ chipsample.sex_estimate }}' !== '{{ sample.sex }}'}"
+      >
+        <strong>Sex Estimate:</strong>
+        {{ chipsample.sex_estimate }}
+      </div>
+
+      <footer style="border-radius:1em; padding:1em;">
+        <nav class="d-flex">
+          <ul class="d-flex gap-3">
+
+            <li>
+
+        {% include 'canvas/components/reports.html' %}
+            </li>
+
+            <li>
         <details
           role="list"
           class="download-menu"
@@ -117,9 +168,10 @@
             </li>
           </ul>
         </details>
+        </li>
 
+        <li>
         <div
-          style="float:right; margin-right: 1em;"
           hx-get="{% url 'chipsample_tab_button' %}"
           hx-target="#tab-buttons"
           hx-trigger="click"
@@ -156,49 +208,9 @@
             </div>
           </button>
         </div>
-      </header>
+        </li>
 
-      <strong>Scan Date:</strong>
-      <span> {{ chipsample.chip.scan_date }} </span>
-
-      <div
-        class="badge"
-        :class="{'pico-background-green-400': {{ chipsample.autosomal_call_rate }} > 0.99,
-                    'pico-background-red-500': {{ chipsample.autosomal_call_rate }} <= 0.99}"
-      >
-        <strong>Autosomal Call Rate:</strong>
-        {{ chipsample.autosomal_call_rate }}
-      </div>
-
-      <div
-        class="badge"
-        :class="{'pico-background-green-400': {{ chipsample.call_rate }} > 0.99,
-                    'pico-background-red-500': {{ chipsample.call_rate }} <= 0.99}"
-      >
-        <strong>Call Rate:</strong>
-        {{ chipsample.call_rate }}
-      </div>
-
-      <div
-        class="badge"
-        :class="{'pico-background-green-400': {{ chipsample.lrr_std_dev }} <= 0.15,
-                    'pico-background-red-500': {{ chipsample.lrr_std_dev }} > 0.15}"
-      >
-        <strong>LRR Std. Dev.:</strong>
-        {{ chipsample.lrr_std_dev }}
-      </div>
-
-      <div
-        class="badge"
-        :class="{'pico-background-green-400': '{{ chipsample.sex_estimate }}' === '{{ sample.sex }}',
-                    'pico-background-red-500': '{{ chipsample.sex_estimate }}' !== '{{ sample.sex }}'}"
-      >
-        <strong>Sex Estimate:</strong>
-        {{ chipsample.sex_estimate }}
-      </div>
-
-      <footer style="border-radius:1em; padding:1em;">
-        {% include 'canvas/components/reports.html' %}
+        </nav>
       </footer>
     </article>
   {% endfor %}

@@ -6,6 +6,7 @@
   {% endif %}
         "
   style="
+          padding: .6em;
           border-radius: 1em;
           "
   hx-trigger="triggerReportUpdate{{ chipsample.pk }} from:body"
@@ -25,8 +26,10 @@
     hx-swap="outerHTML"
   >
     {% if chipsample.report.count == 0 %}
+    <i class="fa-solid fa-file-pdf"></i>
       No reports
     {% else %}
+      <i class="fa-solid fa-file-pdf"></i>
       {{ chipsample.report.count }}
       Reports
     {% endif %}
