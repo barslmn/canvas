@@ -20,15 +20,39 @@ class Lot(models.Model):
 
 
 def analysis_files_directory_path(instance, filename):
-    # Get the chip_id from the related ChipSample model
-    chip_type = instance.name
-    return f"analysis_files/{chip_type}/{filename}"
+    return f"analysis_files/{instance.name}/{filename}"
+
+def genome_directory_path(instance, filename):
+    return f"genomes/{instance.name}/{filename}"
+
+
+class Genome(models.Model):
+    name = models.CharField(max_length=100)
+    fasta = models.FileField(
+        upload_to=genome_directory_path,
+        validators=[FileExtensionValidator(allowed_extensions=["fa", "fasta"])],
+        blank=True,
+    )
+    fasta_index = models.FileField(
+        upload_to=genome_directory_path,
+        validators=[FileExtensionValidator(allowed_extensions=["fai", "fasta.fai"])],
+        blank=True,
+    )
+    band = models.FileField(
+        upload_to=genome_directory_path,
+        validators=[FileExtensionValidator(allowed_extensions=["txt", "band"])],
+        blank=True,
+    )
+
+    def __str__(self):
+        return self.name
 
 
 class ChipType(models.Model):
     name = models.CharField(max_length=100)
     rows = models.IntegerField(default=12)
     cols = models.IntegerField(default=2)
+    genome = models.ForeignKey("Genome", on_delete=models.PROTECT, null=True)
 
     bpm = models.FileField(
         upload_to=analysis_files_directory_path,
@@ -45,24 +69,9 @@ class ChipType(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=["egt"])],
         blank=True,
     )
-    fasta = models.FileField(
-        upload_to="analysis_files/",
-        validators=[FileExtensionValidator(allowed_extensions=["fa"])],
-        blank=True,
-    )
-    fasta_index = models.FileField(
-        upload_to="analysis_files/",
-        validators=[FileExtensionValidator(allowed_extensions=["fai"])],
-        blank=True,
-    )
     pfb = models.FileField(
         upload_to=analysis_files_directory_path,
         validators=[FileExtensionValidator(allowed_extensions=["pfb"])],
-        blank=True,
-    )
-    band = models.FileField(
-        upload_to=analysis_files_directory_path,
-        validators=[FileExtensionValidator(allowed_extensions=["txt"])],
         blank=True,
     )
 

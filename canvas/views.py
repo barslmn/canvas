@@ -683,7 +683,7 @@ def start_run(chip_id):
         HOST_IP = get_default_gateway_linux()
         MINIO_IP = socket.gethostbyname("minio")
         label = secrets.token_urlsafe(6)
-        chipType = Chip.objects.get(chip_id=chip_id).chip_type
+        chip_type = Chip.objects.get(chip_id=chip_id).chip_type
 
         # Create the sample sheet file
         with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as ss:
@@ -731,12 +731,12 @@ mkdir -p "$job_dir"
 cd "$job_dir"
 tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --chip_id {chip_id} \\
-    --bpm s3://canvas/{chipType.bpm.name} \\
-    --csv s3://canvas/{chipType.csv.name} \\
-    --egt s3://canvas/{chipType.egt.name} \\
-    --fasta s3://canvas/{chipType.fasta.name} \\
-    --pfb s3://canvas/{chipType.pfb.name} \\
-    --band s3://canvas/{chipType.band.name} \\
+    --bpm s3://canvas/{chip_type.bpm.name} \\
+    --csv s3://canvas/{chip_type.csv.name} \\
+    --egt s3://canvas/{chip_type.egt.name} \\
+    --fasta s3://canvas/{chip_type.genome.fasta.name} \\
+    --pfb s3://canvas/{chip_type.pfb.name} \\
+    --band s3://canvas/{chip_type.genome.band.name} \\
     --tex_template canvas-pipeline/template/base_template.tex \\
     --samplesheet {ss.name} \\
     -c {nfc.name} \\
@@ -1223,11 +1223,11 @@ job_dir="/home/canvas/jobs/{label}"
 mkdir -p "$job_dir"
 cd "$job_dir"
 tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
-    --chip_id {chip_id} \\
-    --chip_type {chip_type} \\
-    --position {chipsample.position} \\
+    --chip_id "{chip_id}" \\
+    --chip_type "{chip_type}" \\
+    --position "{chipsample.position}" \\
     --tex_template /home/canvas/canvas-pipeline/template/base_template.tex \\
-    --cnvs {cnv_file.name} \\
+    --cnvs "{cnv_file.name}" \\
     --institute "{chipsample.sample.institution.name}" \\
     --protocol_id "{chipsample.sample.protocol_id}" \\
     --version {version} \\
@@ -1528,12 +1528,12 @@ job_dir="/home/canvas/jobs/{label}"
 mkdir -p "$job_dir"
 cd "$job_dir"
 tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
-    --chip_id {chip_id} \\
-    --position {chipsample.position} \\
-    --cnv_bed {cnv_file.name} \\
+    --chip_id "{chip_id}" \\
+    --position "{chipsample.position}" \\
+    --cnv_bed "{cnv_file.name}" \\
     --snap_probes {snap_probes} \\
     --cnv_pk {cnv.pk} \\
-    --band s3://canvas/analysis_files/GSA-Cyto/hg19_chrom_band.txt \\
+    --band s3://canvas/{chipsample.chip.chip_type.genome.band.name} \\
     -c {nfc.name} \\
     -profile docker
 tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
