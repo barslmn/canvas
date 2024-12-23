@@ -25,7 +25,7 @@
         </ul>
       </nav>
     {% endif %}
-    <strong>Protocol ID: {{ sample.protocol_id }}</strong>
+    <span class="badge pico-background-azure-200" style="font-variation-settings: 'wght' 700;">Protocol ID: {{ sample.protocol_id }}</span>
   </header>
   <p>
     <strong>Arrival Date:</strong>
@@ -58,14 +58,12 @@
   {% for chipsample in sample.chipsample.all %}
     <article style="border-radius:1em; padding:1em;">
       <header style="border-radius:1em; padding:1em;">
-        <span class="badge pico-background-yellow-200">
-          <strong>Chip ID:</strong>
-          {{ chipsample.chip.chip_id }}
+        <span class="badge pico-background-yellow-200" style="font-variation-settings: 'wght' 600;">
+          Chip ID: {{ chipsample.chip.chip_id }}
         </span>
 
-        <span class="badge pico-background-blue-200">
-          <strong>Position:</strong>
-          {{ chipsample.position }}
+        <span class="badge pico-background-blue-200" style="font-variation-settings: 'wght' 600;">
+          Position: {{ chipsample.position }}
         </span>
 
       </header>
