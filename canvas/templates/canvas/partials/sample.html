@@ -113,59 +113,62 @@
 
             <li>
 
-        {% include 'canvas/components/reports.html' %}
+              {% include 'canvas/components/reports.html' %}
             </li>
 
             <li>
-        <details
-          role="list"
-          class="download-menu"
-          style="display: inline-block; margin-left: 1em;"
-        >
-          <summary role="button" aria-haspopup="listbox" style="border-radius: 1em; padding: .6em;" class="btn btn-primary outline">
-              <i class="fa-solid fa-download pico-color-purple-500"></i>
-              Download files
-          </summary>
-          <ul role="listbox">
-            <li>
-              <a
-                href="{% url 'download_chipsample_files' chipsample.id 'idats' %}"
-                >IDATs Download</a
-              >
-            </li>
-            <li>
-              <a
-                href="{% url 'download_chipsample_files' chipsample.id 'gtcs' %}"
-                >GTCs Download</a
-              >
-            </li>
-            <li>
-              <a
-                href="{% url 'download_chipsample_files' chipsample.id 'vcfs' %}"
-                >VCFs Download</a
-              >
-            </li>
-            <li>
-              <a
-                href="{% url 'download_chipsample_files' chipsample.id 'bedgraphs' %}"
-                >BedGraphs Download</a
-              >
-            </li>
-            <li>
-              <a
-                href="{% url 'download_chipsample_files' chipsample.id 'reports' %}"
-                >Reports Download</a
-              >
-            </li>
-            <li>
-              <hr />
-              <a
-                href="{% url 'download_chipsample_files' chipsample.id 'all' %}"
-                >Download All Files</a
-              >
-            </li>
-          </ul>
-        </details>
+            <details
+              role="list"
+              class="download-menu"
+            >
+              <summary role="button" aria-haspopup="listbox" style="border-radius: 1em; padding: 0;" class="btn btn-primary outline">
+                <div style="display: flex; align-items: center; width: 100%;">
+                  <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
+                    <i class="fa-solid fa-download"></i>
+                  </div>
+                  <span style="padding: 0 1em;">Download files</span>
+                </div>
+              </summary>
+              <ul role="listbox">
+                <li>
+                  <a
+                    href="{% url 'download_chipsample_files' chipsample.id 'idats' %}"
+                    >IDATs Download</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{% url 'download_chipsample_files' chipsample.id 'gtcs' %}"
+                    >GTCs Download</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{% url 'download_chipsample_files' chipsample.id 'vcfs' %}"
+                    >VCFs Download</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{% url 'download_chipsample_files' chipsample.id 'bedgraphs' %}"
+                    >BedGraphs Download</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="{% url 'download_chipsample_files' chipsample.id 'reports' %}"
+                    >Reports Download</a
+                  >
+                </li>
+                <li>
+                  <hr />
+                  <a
+                    href="{% url 'download_chipsample_files' chipsample.id 'all' %}"
+                    >Download All Files</a
+                  >
+                </li>
+              </ul>
+            </details>
         </li>
 
         <li>
@@ -188,7 +191,7 @@
         >
           <button
             class="outline"
-            style="border-radius:1em; padding: .6em;"
+            style="border-radius:1em; padding: 0; display: flex; align-items: center;"
             hx-get="{% url 'chipsample_tab_content' %}"
             hx-target="#tab-contents"
             hx-trigger="click"
@@ -201,8 +204,12 @@
               hx-trigger="click"
               hx-swap="beforeend"
               hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
+              style="display: flex; align-items: center; width: 100%;"
             >
-              <i class="fa-solid fa-dna"></i> View Variants
+              <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
+                <i class="fa-solid fa-dna"></i>
+              </div>
+              <span style="padding: 0 1em;">View Variants</span>
             </div>
           </button>
         </div>

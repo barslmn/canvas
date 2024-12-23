@@ -1,14 +1,11 @@
 <summary
+  style="border-radius: 1em; padding: 0;"
   role="button"
-  class="outline
+  class="btn outline
     {% if chipsample.report.count == 0 %}
     secondary
   {% endif %}
         "
-  style="
-          padding: .6em;
-          border-radius: 1em;
-          "
   hx-trigger="triggerReportUpdate{{ chipsample.pk }} from:body"
   hx-post="{% url 'get_report_count' %}"
   hx-vals='{"chipsample_pk":"{{ chipsample.pk }}",
@@ -24,14 +21,18 @@
              }'
     hx-target="next ul"
     hx-swap="outerHTML"
+    style="display: flex; align-items: center; width: 100%;"
   >
-    {% if chipsample.report.count == 0 %}
-    <i class="fa-solid fa-file-pdf"></i>
-      No reports
-    {% else %}
-      <i class="fa-solid fa-file-pdf"></i>
-      {{ chipsample.report.count }}
-      Reports
-    {% endif %}
+      {% if chipsample.report.count == 0 %}
+        <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
+          <i class="fa-solid fa-file-pdf"></i>
+        </div>
+        <span style="padding: 0 1em;">No reports</span>
+      {% else %}
+        <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
+          <i class="fa-solid fa-file-pdf"></i>
+        </div>
+        <span style="padding: 0 1em;">{{ chipsample.report.count }} Reports</span>
+      {% endif %}
   </div>
 </summary>
