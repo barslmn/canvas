@@ -711,7 +711,7 @@ def start_run(chip_id):
   access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
   secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
   client {{
-    endpoint = "http://{MINIO_IP}:9000"
+    endpoint = 'https://minio.cnvcanvas.com'
   }}
 }}
 profiles {{
@@ -1201,17 +1201,17 @@ def create_report(request):
         with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as nfc:
             nfc.write(
                 f"""aws {{
-    access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
-    secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
-    client {{
-    endpoint = "http://{MINIO_IP}:9000"
-    }}
-    }}
-    profiles {{
-    docker {{
-        docker.enabled = true
-    }}
-    }}"""
+  access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
+  secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
+  client {{
+    endpoint = 'https://minio.cnvcanvas.com'
+  }}
+}}
+profiles {{
+  docker {{
+    docker.enabled = true
+  }}
+}}"""
             )
             nfc.flush()
             subprocess.run(f"scp {nfc.name} canvas@{HOST_IP}:/tmp", shell=True)
@@ -1507,17 +1507,17 @@ def cnv_edit(request):
                 with tempfile.NamedTemporaryFile(delete=False, mode="w") as nfc:
                     nfc.write(
                         f"""aws {{
-    access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
-    secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
-    client {{
-    endpoint = "http://{MINIO_IP}:9000"
-    }}
-    }}
-    profiles {{
-    docker {{
-        docker.enabled = true
-    }}
-    }}"""
+  access_key = "{settings.MINIO_STORAGE_ACCESS_KEY}"
+  secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
+  client {{
+    endpoint = 'https://minio.cnvcanvas.com'
+  }}
+}}
+profiles {{
+  docker {{
+    docker.enabled = true
+  }}
+}}"""
                     )
                     nfc.flush()
                     subprocess.run(
