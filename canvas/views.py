@@ -749,10 +749,10 @@ tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     -with-report {chip_id}_{label}.html \\
     -profile docker
 
-tsp -D $(tsp -l | grep {label} | cut -d' ' -f1) docker compose \\
-    -f /home/canvas/canvas/docker-compose_prod.yaml \\
-    exec canvas \\
-    python manage.py associate_files {chip_id} canvas
+tsp -D $(tsp -l | grep {label} | cut -d' ' -f1) \\
+                bash -c 'CONTAINER_ID=$(docker ps -q -f name=canvas_canvas.1) &&
+                docker exec $CONTAINER_ID python manage.py associate_files \\
+                {chip_id} canvas'
 """
             )
             script.flush()
@@ -798,12 +798,16 @@ def get_institutions_for_user(user, institutions):
 
 
 def index(request):
-    samples = get_samples_for_user(request.user, samples=Sample.objects.all()).order_by("-entry_date")
+    samples = get_samples_for_user(request.user, samples=Sample.objects.all()).order_by(
+        "-entry_date"
+    )
     len_samples = len(samples)
     sample_paginator = Paginator(samples, 12)
     samples = sample_paginator.get_page(1)
 
-    chips = get_chips_for_user(request.user, chips=Chip.objects.all()).order_by("-entry_date")
+    chips = get_chips_for_user(request.user, chips=Chip.objects.all()).order_by(
+        "-entry_date"
+    )
     len_chips = len(chips)
     chip_paginator = Paginator(chips, 12)
     chips = chip_paginator.get_page(1)
@@ -1232,11 +1236,14 @@ tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     -c {nfc.name} \\
     -with-report {chip_id}_{label}.html \\
     -profile docker
-tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
-    -f /home/canvas/canvas/docker-compose_prod.yaml \\
-    exec canvas python manage.py associate_files --pdf {chip_id} canvas \\
-    {"--classification_ids " + " ".join(map(str, classification_ids)) if classification_ids else ""}
-            """
+
+
+tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) \\
+                bash -c 'CONTAINER_ID=$(docker ps -q -f name=canvas_canvas.1) &&
+                docker exec $CONTAINER_ID python manage.py associate_files \\
+                --pdf {chip_id} canvas \\
+                {"--classification_ids " + " ".join(map(str, classification_ids)) if classification_ids else ""}'
+"""
             )
             script.flush()
             subprocess.run(f"scp {script.name} canvas@{HOST_IP}:/tmp", shell=True)
@@ -1534,10 +1541,12 @@ tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --band s3://canvas/{chipsample.chip.chip_type.genome.band.name} \\
     -c {nfc.name} \\
     -profile docker
-tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) docker compose \\
-    -f /home/canvas/canvas/docker-compose_prod.yaml \\
-    exec canvas \\
-    python manage.py associate_files --cnv_pk {cnv.pk} {chip_id} canvas
+
+tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) \\
+                        bash -c 'CONTAINER_ID=$(docker ps -q -f name=canvas_canvas.1) &&
+                        docker exec $CONTAINER_ID \\
+                        python manage.py associate_files \\
+                        --cnv_pk {cnv.pk} {chip_id} canvas'
 """
                     )
                     script.flush()
