@@ -25,13 +25,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG") in ("True")
 
+
+def read_secret(secret_file):
+    try:
+        with open(secret_file, 'r') as f:
+            return f.read().strip()
+    except:
+        return None
+
 if DEBUG:
     ALLOWED_HOSTS = ["*"]
     SECRET_KEY = "debug"
 else:
     ALLOWED_HOSTS = [os.getenv("HOST_NAME")]
     CSRF_TRUSTED_ORIGINS = ["https://" + os.getenv("HOST_NAME")]
-    SECRET_KEY = os.getenv("SECRET_KEY")
+    SECRET_KEY = read_secret(os.getenv('SECRET_KEY_FILE'))
 
 
 # Application definition
@@ -116,7 +124,7 @@ else:
             "ENGINE": os.getenv("SQL_ENGINE"),
             "NAME": os.getenv("SQL_DATABASE"),
             "USER": os.getenv("SQL_USER"),
-            "PASSWORD": os.getenv("SQL_PASSWORD"),
+            "PASSWORD": read_secret(os.getenv("SQL_PASSWORD_FILE")),
             "HOST": os.getenv("SQL_HOST"),
             "PORT": os.getenv("SQL_PORT"),
             "ENGINE": "django.db.backends.postgresql",
@@ -171,7 +179,7 @@ EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "") in ("True")
 EMAIL_USE_TSL = os.getenv("EMAIL_USE_TSL", "") in ("True")
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 SERVER_EMAIL = os.getenv("SERVER_EMAIL")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_HOST_PASSWORD = read_secret(os.getenv('EMAIL_HOST_PASSWORD_FILE'))
 ADMINS = [(i.split("@")[0], i) for i in os.getenv("ADMINS", "").split(";") if "@" in i]
 
 ACCOUNT_AUTHENTICATION_METHOD = "username_email"
@@ -203,8 +211,9 @@ else:
 
     MINIO_STORAGE_USE_HTTPS = os.getenv("MINIO_STORAGE_USE_HTTPS") in ("True")
     MINIO_STORAGE_ENDPOINT = os.getenv("MINIO_STORAGE_ENDPOINT")
-    MINIO_STORAGE_ACCESS_KEY = os.getenv("MINIO_STORAGE_ACCESS_KEY")
-    MINIO_STORAGE_SECRET_KEY = os.getenv("MINIO_STORAGE_SECRET_KEY")
+
+    MINIO_STORAGE_ACCESS_KEY = read_secret(os.getenv('MINIO_STORAGE_ACCESS_KEY_FILE'))
+    MINIO_STORAGE_SECRET_KEY = read_secret(os.getenv('MINIO_STORAGE_SECRET_KEY_FILE')) 
 
     MINIO_STORAGE_MEDIA_BUCKET_NAME = "canvas"
     MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET = True
