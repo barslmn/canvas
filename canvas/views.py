@@ -712,6 +712,7 @@ def start_run(chip_id):
   secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
   client {{
     endpoint = 'https://minio.cnvcanvas.com'
+    s3PathStyleAccess = true
   }}
 }}
 profiles {{
@@ -1205,6 +1206,7 @@ def create_report(request):
   secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
   client {{
     endpoint = 'https://minio.cnvcanvas.com'
+    s3PathStyleAccess = true
   }}
 }}
 profiles {{
@@ -1511,6 +1513,7 @@ def cnv_edit(request):
   secret_key = "{settings.MINIO_STORAGE_SECRET_KEY}"
   client {{
     endpoint = 'https://minio.cnvcanvas.com'
+    s3PathStyleAccess = true
   }}
 }}
 profiles {{
