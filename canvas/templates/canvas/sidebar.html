@@ -2,7 +2,7 @@
 
 <div style="min-width:9vw; height:96vh; display:flex; flex-direction:column;">
   <img
-    src="{% static 'canvas/img/canvas.png' %}"
+    src="{% static 'canvas/img/canvas_logo_new_year.png' %}"
     alt="canvas_logo"
     width="120px"
     height="60px"
@@ -11,7 +11,7 @@
   <p>version: v24.10</p>
   <p>commit: {{ canvas_version }}</p>
 
-  <aside >
+  <aside>
     <nav>
       <ul>
         <li>
@@ -25,7 +25,10 @@
             <i class="fa-solid fa-vial"></i>
             <span>Samples</span>
           </a>
-          <ul x-show="views.currentView === 'samples'" style="padding-left: 1.5rem;">
+          <ul
+            x-show="views.currentView === 'samples'"
+            style="padding-left: 1.5rem;"
+          >
             <li>
               <a
                 data-tooltip="Hide/Show sample search component."
@@ -59,19 +62,22 @@
             <i class="fa-solid fa-grip-vertical"></i>
             <span>Chips</span>
           </a>
-          <ul x-show="views.currentView === 'chips'" style="padding-left: 1.5rem;">
+          <ul
+            x-show="views.currentView === 'chips'"
+            style="padding-left: 1.5rem;"
+          >
             <li>
-<input
-  autocomplete="off"
-  id="chip-search"
-  type="search"
-  name="search"
-  placeholder="Chip search start by tying in barcode"
-  hx-get="{% url 'chip_search' %}"
-  hx-trigger="input changed delay:500ms, searchChips from:document"
-  hx-target="#chips"
-  hx-swap="swap:200ms"
-/>
+              <input
+                autocomplete="off"
+                id="chip-search"
+                type="search"
+                name="search"
+                placeholder="Chip search start by tying in barcode"
+                hx-get="{% url 'chip_search' %}"
+                hx-trigger="input changed delay:500ms, searchChips from:document"
+                hx-target="#chips"
+                hx-swap="swap:200ms"
+              />
             </li>
             <li>
               <a
@@ -89,28 +95,29 @@
     </nav>
   </aside>
 
-  <hr>
+  <hr />
 
   <aside x-show="views.currentView === 'samples'" x-transition>
     <nav>
-      <ul id="tab-buttons" style="max-height: 40vh; overflow-y: auto; scrollbar-width: thin;"></ul>
+      <ul
+        id="tab-buttons"
+        style="max-height: 40vh; overflow-y: auto; scrollbar-width: thin;"
+      ></ul>
     </nav>
   </aside>
-  <hr>
+  <hr />
 
   <aside x-show="views.currentView === 'samples'" x-transition>
-    <div id="chipsample-sidebar-content">
-    </div>
+    <div id="chipsample-sidebar-content"></div>
   </aside>
-
 
   <div x-show="idat_uploading">
     <progress id="idat-upload-progress" value="0" max="100"></progress>
     <span id="idat-upload-span"></span>
   </div>
- 
+
   <div class="flex-grow" style="flex: 1 1 auto;"></div>
-  <hr>
+  <hr />
   <div class="user-menu">
     <details class="user-dropdown">
       <summary class="user-summary">
@@ -136,9 +143,7 @@
           <div class="menu-item">
             {% include 'canvas/dark_mode_toggle.html' %}
           </div>
-          <div class="menu-item logout">
-            {% include "canvas/logout.html" %}
-          </div>
+          <div class="menu-item logout">{% include "canvas/logout.html" %}</div>
         </div>
       </div>
     </details>
@@ -146,108 +151,108 @@
 </div>
 
 <style>
-.user-menu {
-  margin-top: auto;
-  padding: 0.5rem;
-}
+  .user-menu {
+    margin-top: auto;
+    padding: 0.5rem;
+  }
 
-.user-dropdown {
-  background: var(--surface-2);
-  border-radius: 1rem;
-  overflow: hidden;
-}
+  .user-dropdown {
+    background: var(--surface-2);
+    border-radius: 1rem;
+    overflow: hidden;
+  }
 
-.user-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem;
-  cursor: pointer;
-  user-select: none;
-}
+  .user-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    cursor: pointer;
+    user-select: none;
+  }
 
-.user-summary::after {
-  display: none;
-}
+  .user-summary::after {
+    display: none;
+  }
 
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 
-.user-menu-content {
-  padding: 0.75rem;
-  background: var(--surface-3);
-  border-top: 1px solid var(--surface-4);
-}
+  .user-menu-content {
+    padding: 0.75rem;
+    background: var(--surface-3);
+    border-top: 1px solid var(--surface-4);
+  }
 
-.menu-section {
-  padding: 0.5rem 0;
-}
+  .menu-section {
+    padding: 0.5rem 0;
+  }
 
-.menu-section:not(:last-child) {
-  border-bottom: 1px solid var(--surface-4);
-}
+  .menu-section:not(:last-child) {
+    border-bottom: 1px solid var(--surface-4);
+  }
 
-.menu-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-weight: 500;
-  margin-bottom: 0.5rem;
-}
+  .menu-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+  }
 
-.institutes-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  max-height: 120px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--surface-4) transparent;
-}
+  .institutes-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 120px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--surface-4) transparent;
+  }
 
-.institutes-list::-webkit-scrollbar {
-  width: 6px;
-}
+  .institutes-list::-webkit-scrollbar {
+    width: 6px;
+  }
 
-.institutes-list::-webkit-scrollbar-track {
-  background: transparent;
-}
+  .institutes-list::-webkit-scrollbar-track {
+    background: transparent;
+  }
 
-.institutes-list::-webkit-scrollbar-thumb {
-  background-color: var(--surface-4);
-  border-radius: 3px;
-}
+  .institutes-list::-webkit-scrollbar-thumb {
+    background-color: var(--surface-4);
+    border-radius: 3px;
+  }
 
-.institutes-list li {
-  padding: 0.5rem;
-  margin: 0.25rem 0;
-  border-radius: 0.25rem;
-  transition: background-color 0.2s;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .institutes-list li {
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    border-radius: 0.25rem;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.institutes-list li:hover {
-  background: var(--surface-4);
-}
+  .institutes-list li:hover {
+    background: var(--surface-4);
+  }
 
-.menu-item {
-  padding: 0.5rem 0;
-}
+  .menu-item {
+    padding: 0.5rem 0;
+  }
 
-.menu-item.logout {
-  margin-top: 0.5rem;
-}
+  .menu-item.logout {
+    margin-top: 0.5rem;
+  }
 
-details[open] .fa-chevron-down {
-  transform: rotate(180deg);
-}
+  details[open] .fa-chevron-down {
+    transform: rotate(180deg);
+  }
 
-.fa-chevron-down {
-  transition: transform 0.2s;
-}
+  .fa-chevron-down {
+    transition: transform 0.2s;
+  }
 </style>
