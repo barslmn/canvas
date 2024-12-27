@@ -3,21 +3,24 @@
 </div>
 
 {% if success %}
-  <div x-init="showCNVModal = false"></div>
-  <script>
-    table.updateData([
-      {
+<div x-init="showCNVModal = false"></div>
+<script>
+    // Create new row object with all the CNV data
+    const newCNVData = {
         cnv_pk: "{{ cnv.pk }}",
         VariantID: "{{ cnv.variant_id }}",
-        chr_info: "{{ cnv.cnv_json.chr_info }}",
-        type: "{{ cnv.cnv_json.type }}",
-        total_score: 0,
-        Classification: "",  // Empty since it's a new CNV
-        classification_pk: "",  // Empty since it's a new CNV
+        chr_info: "{{ cnv.cnv_json.user_cnv }}",
+        state_info: "{{ cnv.cnv_json.state_info }}",
+        total_score: "{{ cnv.cnv_json.Total score }}",
+        Classification: "{{ cnv.cnv_json.Classification }}",
+        length_info: "{{ cnv.cnv_json.length_info }}",
+        numsnp_info: "{{ cnv.cnv_json.numsnp_info }}",
         addToReport: false
-      }
-    ]);
-  </script>
+    };
+    
+    // Add the new row to the table
+    table.addData([newCNVData], true);
+</script>
 {% endif %}
 
 <style>
