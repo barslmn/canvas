@@ -5,43 +5,42 @@
 {% if success %}
 <div x-init="showCNVModal = false"></div>
 <script>
-    // Create new row object with all the CNV data
-    const newCNVData = {
+    // First log the data to make sure it's correct
+    console.log('Adding new CNV:', {
         cnv_pk: "{{ cnv.pk }}",
-        VariantID: "{{ cnv.cnv_json.VariantID }}",
+        VariantID: "{{ cnv.variant_id }}",
         chr_info: "{{ cnv.cnv_json.user_cnv }}",
         state_info: "{{ cnv.cnv_json.state_info }}",
         total_score: "{{ cnv.cnv_json.Total score }}",
         Classification: "{{ cnv.cnv_json.Classification }}",
         length_info: "{{ cnv.cnv_json.length_info }}",
-        numsnp_info: "{{ cnv.cnv_json.numsnp_info }}",
-        Type: "{{ cnv.cnv_json.Type }}",
-        addToReport: false
-    };
-    
-    // Make sure table is defined before using it
-    if (typeof table !== 'undefined') {
-        // Add the new row to the table
-        table.addData([newCNVData], true);
+        numsnp_info: "{{ cnv.cnv_json.numsnp_info }}"
+    });
 
-        // Get the newly added row
-        const newRow = table.getRow(newCNVData);
-        
-        // Add click handler to navigate IGV
-        if (newRow) {
-            newRow.getElement().addEventListener('click', function() {
-                const cnvPosition = newCNVData.chr_info;  // Format: chr:start-end
-                if (typeof igv !== 'undefined' && igv.browser) {
-                    igv.browser.search(cnvPosition);
-                }
-            });
+    // Make sure table exists and is ready
+    if (typeof table !== 'undefined') {
+        const newData = {
+            cnv_pk: "{{ cnv.pk }}",
+            VariantID: "{{ cnv.variant_id }}",
+            chr_info: "{{ cnv.cnv_json.user_cnv }}",
+            state_info: "{{ cnv.cnv_json.state_info }}",
+            total_score: "{{ cnv.cnv_json.Total score }}",
+            Classification: "{{ cnv.cnv_json.Classification }}",
+            length_info: "{{ cnv.cnv_json.length_info }}",
+            numsnp_info: "{{ cnv.cnv_json.numsnp_info }}",
+            addToReport: false
+        };
+
+        // Try both updateData and addData
+        try {
+            table.addData([newData]);
+            table.redraw(true); // Force a redraw
+        } catch (e) {
+            console.error('Error updating table:', e);
         }
     } else {
         console.error('Table is not defined');
     }
-
-    // Debug output to console
-    console.log('New CNV Data:', newCNVData);
 </script>
 {% endif %}
 
