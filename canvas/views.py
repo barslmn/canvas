@@ -1596,7 +1596,7 @@ tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) \\
                 {
                     "success": True,
                     "message": "CNV successfully added",
-                    "cnv": json.dumps(cnv.cnv_json),
+                    "cnv": cnv,
                 },
             )
 

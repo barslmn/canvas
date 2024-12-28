@@ -8,31 +8,40 @@
     // Create new row object with all the CNV data
     const newCNVData = {
         cnv_pk: "{{ cnv.pk }}",
-        VariantID: "{{ cnv.variant_id }}",
+        VariantID: "{{ cnv.cnv_json.VariantID }}",
         chr_info: "{{ cnv.cnv_json.user_cnv }}",
         state_info: "{{ cnv.cnv_json.state_info }}",
-        total_score: "{{ cnv.cnv_json.total_score }}",
+        total_score: "{{ cnv.cnv_json.Total score }}",
         Classification: "{{ cnv.cnv_json.Classification }}",
         length_info: "{{ cnv.cnv_json.length_info }}",
         numsnp_info: "{{ cnv.cnv_json.numsnp_info }}",
+        Type: "{{ cnv.cnv_json.Type }}",
         addToReport: false
     };
     
-    // Add the new row to the table with click handler
-    table.addData([newCNVData], true);
+    // Make sure table is defined before using it
+    if (typeof table !== 'undefined') {
+        // Add the new row to the table
+        table.addData([newCNVData], true);
 
-    // Get the newly added row
-    const newRow = table.getRow(newCNVData);
-    
-    // Add click handler to navigate IGV
-    if (newRow) {
-        newRow.getElement().addEventListener('click', function() {
-            const cnvPosition = newCNVData.chr_info;  // Format: chr:start-end
-            if (typeof igv !== 'undefined' && igv.browser) {
-                igv.browser.search(cnvPosition);
-            }
-        });
+        // Get the newly added row
+        const newRow = table.getRow(newCNVData);
+        
+        // Add click handler to navigate IGV
+        if (newRow) {
+            newRow.getElement().addEventListener('click', function() {
+                const cnvPosition = newCNVData.chr_info;  // Format: chr:start-end
+                if (typeof igv !== 'undefined' && igv.browser) {
+                    igv.browser.search(cnvPosition);
+                }
+            });
+        }
+    } else {
+        console.error('Table is not defined');
     }
+
+    // Debug output to console
+    console.log('New CNV Data:', newCNVData);
 </script>
 {% endif %}
 
