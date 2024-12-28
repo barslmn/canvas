@@ -3,9 +3,9 @@
 </div>
 
 {% if success %}
-<div x-init="showCNVModal = false"></div>
+<div x-init="showCNVModal = false; updateTableWithCNV();"></div>
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+function updateTableWithCNV() {
     if (typeof table !== "undefined") {
         try {
             // Prepare the new CNV data for table update
@@ -27,18 +27,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Update the table with the new CNV data
             table.updateData([newCNVData]);
-            console.log("CNV added to table:", newCNVData);
+            console.log("CNV added to table immediately:", newCNVData);
 
-            // Optionally redraw the table (if needed)
+            // Optionally redraw the table (if required by your table library)
             table.redraw(true);
 
-            // Close modal after table update
+            // Ensure modal close state
             showCNVModal = false;
         } catch (error) {
             console.error("Error updating table with new CNV data:", error);
         }
     } else {
         console.error("Table is not defined");
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // Ensure the table is updated even if the modal closes late
+    if (showCNVModal === false) {
+        updateTableWithCNV();
     }
 });
 </script>
