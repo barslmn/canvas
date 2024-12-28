@@ -31,10 +31,16 @@
             addToReport: false
         };
 
-        // Try both updateData and addData
         try {
-            table.addData([newData]);
-            table.redraw(true); // Force a redraw
+            // Get current data
+            let currentData = table.getData();
+            // Add new data
+            currentData.push(newData);
+            // Clear and set all data
+            table.clearData();
+            table.setData(currentData);
+            // Force redraw
+            table.redraw(true);
         } catch (e) {
             console.error('Error updating table:', e);
         }
