@@ -5,29 +5,29 @@
 {% if success %}
 <div x-init="showCNVModal = false"></div>
 <script>
-    document.addEventListener("DOMContentLoaded", () => {
-        // Ensure the table exists and is ready for updates
-        if (typeof table !== 'undefined') {
-            try {
-                const newData = JSON.parse('{{ cnv_json|escapejs }}');
-                newData.cnv_pk = "{{ cnv.pk }}";
-                newData.VariantID = "{{ cnv.variant_id }}";
+document.addEventListener("DOMContentLoaded", () => {
+    if (typeof table !== "undefined") {
+        try {
+            const newData = JSON.parse('{{ cnv_json|escapejs }}');
+            newData.cnv_pk = "{{ cnv.pk }}";
+            newData.VariantID = "{{ cnv.variant_id }}";
 
-                // Log the data being added
-                console.log("Adding new CNV to table:", newData);
+            // Update the table
+            console.log("Current table data:", table.getData());
+            console.log("Adding new CNV data:", newData);
+            table.updateOrAddData([newData]);
+            table.redraw(true);
 
-                // Update the table
-                let currentData = table.getData();
-                currentData.push(newData);
-                table.updateOrAddData([newData]); // Efficiently add or update the row
-                table.redraw(true);
-            } catch (e) {
-                console.error("Error updating table:", e);
-            }
-        } else {
-            console.error("Table is not defined");
+            // Close modal after table update
+            showCNVModal = false;
+        } catch (e) {
+            console.error("Error updating table:", e);
         }
-    });
+    } else {
+        console.error("Table is not defined");
+    }
+});
+
 </script>
 {% endif %}
 

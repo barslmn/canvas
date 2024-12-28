@@ -14,7 +14,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django_htmx.http import retarget
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 import csv
 from django.http import FileResponse, HttpResponseForbidden, Http404, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -1477,37 +1477,11 @@ def cnv_edit(request):
         snap_probes = request.POST.get("snap_probes", "on").lower() == "on"
 
         try:
-                # Parse ROI
+            # Parse ROI
             chromosome, positions = roi.split(":")
             start, end = map(int, positions.split("-"))
 
-            if settings.DEBUG:
-                cnv = CNV.objects.create(
-                    chipsample=ChipSample.objects.get(id=chipsample_pk),
-                    user=request.user,
-                    cnv_json={
-                        "user_cnv": roi,
-                        "user_copy_number": cn,
-                        "chr_info": roi,
-                        "Type": "DUP" if int(cn) > 2 else "DEL",
-                        "Start": start,
-                        "End": end,
-                        "Size": end - start,
-                        "VariantID": f"{chromosome}_{start}_{end}_{cn}",
-                        "total_score": 0,
-                    },
-                )   
-                return render(
-                    request,
-                    "canvas/partials/cnv_edit_success.html",
-                    {
-                        "success": True, 
-                        "message": "CNV successfully added", 
-                        "cnv": cnv,
-                        "cnv_json": json.dumps(cnv.cnv_json),
-                    },
-                )
-         # Create new CNV
+            # Create new CNV
             chipsample = ChipSample.objects.get(id=chipsample_pk)
             cnv = CNV.objects.create(
                 chipsample=chipsample,
@@ -1596,7 +1570,7 @@ tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) \\
                 {
                     "success": True,
                     "message": "CNV successfully added",
-                    "cnv": cnv,
+                    "cnv": json.dumps(cnv.cnv_json),
                 },
             )
 
@@ -1844,3 +1818,31 @@ def download_chipsample_files(request, chipsample_id, file_type):
         return HttpResponseForbidden(f"No accessible {file_type} files found")
 
     return create_zip_response(files, f"chipsample_{chipsample_id}_{file_type}.zip")
+
+
+def edit_cnv(request, cnv_pk):
+    if request.method == "POST":
+        try:
+            # Your existing CNV update logic here
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'CNV updated successfully',
+                'cnv': {
+                    'pk': cnv.pk,
+                    'variant_id': cnv.variant_id,
+                    'cnv_json': {
+                        'user_cnv': cnv.cnv_json.get('user_cnv'),
+                        'state_info': cnv.cnv_json.get('state_info'),
+                        'Total score': cnv.cnv_json.get('Total score'),
+                        'Classification': cnv.cnv_json.get('Classification'),
+                        'length_info': cnv.cnv_json.get('length_info'),
+                        'numsnp_info': cnv.cnv_json.get('numsnp_info')
+                    }
+                }
+            })
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            })
