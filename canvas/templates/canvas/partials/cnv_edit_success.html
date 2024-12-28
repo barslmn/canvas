@@ -8,26 +8,39 @@
 document.addEventListener("DOMContentLoaded", () => {
     if (typeof table !== "undefined") {
         try {
-            const newData = JSON.parse('{{ cnv_json|escapejs }}');
-            newData.cnv_pk = "{{ cnv.pk }}";
-            newData.VariantID = "{{ cnv.variant_id }}";
+            // Prepare the new CNV data for table update
+            const newCNVData = {
+                cnv_pk: "{{ cnv.pk }}",
+                VariantID: "{{ cnv.variant_id }}",
+                Classification: "{{ cnv.cnv_json.Classification|default:''|escapejs }}",
+                Total_score: "{{ cnv.cnv_json['Total score']|default:'0.00'|escapejs }}",
+                Chromosome: "{{ cnv.cnv_json.Chromosome|escapejs }}",
+                iscn: "{{ cnv.cnv_json.iscn|escapejs }}",
+                Start: "{{ cnv.cnv_json.Start|escapejs }}",
+                End: "{{ cnv.cnv_json.End|escapejs }}",
+                Type: "{{ cnv.cnv_json.Type|escapejs }}",
+                user_cnv: "{{ cnv.cnv_json.user_cnv|escapejs }}",
+                user_copy_number: "{{ cnv.cnv_json.user_copy_number|escapejs }}",
+                All_protein_coding_genes: "{{ cnv.cnv_json['All protein coding genes']|escapejs }}",
+                Dosage_sensitive_genes: "{{ cnv.cnv_json['Known or predicted dosage-sensitive genes']|escapejs }}",
+            };
 
-            // Update the table
-            console.log("Current table data:", table.getData());
-            console.log("Adding new CNV data:", newData);
-            table.updateOrAddData([newData]);
+            // Update the table with the new CNV data
+            table.updateData([newCNVData]);
+            console.log("CNV added to table:", newCNVData);
+
+            // Optionally redraw the table (if needed)
             table.redraw(true);
 
             // Close modal after table update
             showCNVModal = false;
-        } catch (e) {
-            console.error("Error updating table:", e);
+        } catch (error) {
+            console.error("Error updating table with new CNV data:", error);
         }
     } else {
         console.error("Table is not defined");
     }
 });
-
 </script>
 {% endif %}
 
