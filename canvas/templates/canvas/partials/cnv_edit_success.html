@@ -5,63 +5,28 @@
 {% if success %}
 <div x-init="showCNVModal = false"></div>
 <script>
-    // First log the data to make sure it's correct
-    console.log('Adding new CNV:', {
-        cnv_pk: "{{ cnv.pk }}",
-        VariantID: "{{ cnv.variant_id }}",
-        chr_info: "{{ cnv.cnv_json.user_cnv }}",
-        state_info: "{{ cnv.cnv_json.state_info }}",
-        total_score: "{{ cnv.cnv_json.Total score }}",
-        Classification: "{{ cnv.cnv_json.Classification }}",
-        length_info: "{{ cnv.cnv_json.length_info }}",
-        numsnp_info: "{{ cnv.cnv_json.numsnp_info }}"
-    });
+    document.addEventListener("DOMContentLoaded", () => {
+        // Ensure the table exists and is ready for updates
+        if (typeof table !== 'undefined') {
+            try {
+                const newData = JSON.parse('{{ cnv_json|escapejs }}');
+                newData.cnv_pk = "{{ cnv.pk }}";
+                newData.VariantID = "{{ cnv.variant_id }}";
 
-    // Update the table with the new CNV data
-    if (typeof table !== 'undefined') {
-        try {
-            const newData = JSON.parse('{{ cnv_json|escapejs }}');
-            newData.cnv_pk = "{{ cnv.pk }}";
-            newData.VariantID = "{{ cnv.variant_id }}";
+                // Log the data being added
+                console.log("Adding new CNV to table:", newData);
 
-            let currentData = table.getData();
-            currentData.push(newData);
-            table.clearData();
-            table.setData(currentData);
-            table.redraw(true);
-        } catch (e) {
-            console.error('Error updating table:', e);
-        }
-    } else {
-        console.error('Table is not defined');
-    }
-
-    // Handle form submission using JavaScript
-    document.querySelector("#cnvForm").addEventListener("submit", function (e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-
-        fetch(this.action, {
-            method: "POST",
-            body: formData,
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const newData = JSON.parse(data.cnv_json);
-                newData.cnv_pk = data.cnv_pk;
-                newData.VariantID = data.variant_id;
-
+                // Update the table
                 let currentData = table.getData();
                 currentData.push(newData);
-                table.clearData();
-                table.setData(currentData);
+                table.updateOrAddData([newData]); // Efficiently add or update the row
                 table.redraw(true);
-            } else {
-                console.error(data.message);
+            } catch (e) {
+                console.error("Error updating table:", e);
             }
-        })
-        .catch(error => console.error("Error:", error));
+        } else {
+            console.error("Table is not defined");
+        }
     });
 </script>
 {% endif %}
