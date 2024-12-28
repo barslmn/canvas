@@ -11,15 +11,28 @@
         VariantID: "{{ cnv.variant_id }}",
         chr_info: "{{ cnv.cnv_json.user_cnv }}",
         state_info: "{{ cnv.cnv_json.state_info }}",
-        total_score: "{{ cnv.cnv_json.Total score }}",
+        total_score: "{{ cnv.cnv_json.total_score }}",
         Classification: "{{ cnv.cnv_json.Classification }}",
         length_info: "{{ cnv.cnv_json.length_info }}",
         numsnp_info: "{{ cnv.cnv_json.numsnp_info }}",
         addToReport: false
     };
     
-    // Add the new row to the table
+    // Add the new row to the table with click handler
     table.addData([newCNVData], true);
+
+    // Get the newly added row
+    const newRow = table.getRow(newCNVData);
+    
+    // Add click handler to navigate IGV
+    if (newRow) {
+        newRow.getElement().addEventListener('click', function() {
+            const cnvPosition = newCNVData.chr_info;  // Format: chr:start-end
+            if (typeof igv !== 'undefined' && igv.browser) {
+                igv.browser.search(cnvPosition);
+            }
+        });
+    }
 </script>
 {% endif %}
 

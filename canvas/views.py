@@ -1477,11 +1477,37 @@ def cnv_edit(request):
         snap_probes = request.POST.get("snap_probes", "on").lower() == "on"
 
         try:
-            # Parse ROI
+                # Parse ROI
             chromosome, positions = roi.split(":")
             start, end = map(int, positions.split("-"))
 
-            # Create new CNV
+            if settings.DEBUG:
+                cnv = CNV.objects.create(
+                    chipsample=ChipSample.objects.get(id=chipsample_pk),
+                    user=request.user,
+                    cnv_json={
+                        "user_cnv": roi,
+                        "user_copy_number": cn,
+                        "chr_info": roi,
+                        "Type": "DUP" if int(cn) > 2 else "DEL",
+                        "Start": start,
+                        "End": end,
+                        "Size": end - start,
+                        "VariantID": f"{chromosome}_{start}_{end}_{cn}",
+                        "total_score": 0,
+                    },
+                )   
+                return render(
+                    request,
+                    "canvas/partials/cnv_edit_success.html",
+                    {
+                        "success": True, 
+                        "message": "CNV successfully added", 
+                        "cnv": cnv,
+                        "cnv_json": json.dumps(cnv.cnv_json),
+                    },
+                )
+         # Create new CNV
             chipsample = ChipSample.objects.get(id=chipsample_pk)
             cnv = CNV.objects.create(
                 chipsample=chipsample,
