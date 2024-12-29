@@ -5,20 +5,9 @@
 {% if success %}
 <div x-init="showCNVModal = false"></div>
 <script>
-    table.updateData([
-      {
-        cnv_pk: "{{ cnv.pk }}",
-        VariantID: "{{ cnv.variant_id }}",
-        chr_info: "{{ cnv.cnv_json.user_cnv }}",
-        state_info: "{{ cnv.cnv_json.state_info }}",
-        total_score: "{{ cnv.cnv_json.total_score }}",
-        Classification: "{{ cnv.cnv_json.Classification }}",
-        length_info: "{{ cnv.cnv_json.length_info }}",
-        numsnp_info: "{{ cnv.cnv_json.numsnp_info }}",
-        addToReport: false
-      }
-    ]);
-    table.redraw();
+    const newCNV = {{ cnv_data|safe }};
+    table.addData([newCNV]); // Add the new CNV data to the table
+    table.redraw(); // Refresh the table to reflect the changes
 </script>
 {% endif %}
 
