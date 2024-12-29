@@ -4,11 +4,12 @@
 
 {% if success %}
 <div 
-    x-init="showCNVModal = false"
-    hx-get="{% url 'chipsample_tab_content' %}"
-    hx-trigger="load"
-    hx-target="#chipsample-{{ chipsample.pk }}-tab-content"
-    hx-vals='{"chipsample_pk": "{{ chipsample.pk }}"}'
+    x-init="
+        $nextTick(() => {
+            showCNVModal = false;
+            htmx.trigger('#chipsample-{{ chipsample.pk }}-tab-content', 'refreshContent')
+        })
+    "
 ></div>
 
 <style>
