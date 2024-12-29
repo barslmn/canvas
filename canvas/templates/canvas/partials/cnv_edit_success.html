@@ -5,8 +5,8 @@
 {% if success %}
 <div x-init="showCNVModal = false"></div>
 <script>
-    // Create new row object with all the CNV data
-    const newCNVData = {
+    table.updateData([
+      {
         cnv_pk: "{{ cnv.pk }}",
         VariantID: "{{ cnv.variant_id }}",
         chr_info: "{{ cnv.cnv_json.user_cnv }}",
@@ -16,10 +16,8 @@
         length_info: "{{ cnv.cnv_json.length_info }}",
         numsnp_info: "{{ cnv.cnv_json.numsnp_info }}",
         addToReport: false
-    };
-    
-    // Add the new row to the table
-    table.addData([newCNVData], true);
+      }
+    ]);
 </script>
 {% endif %}
 
