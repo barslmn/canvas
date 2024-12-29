@@ -5,9 +5,8 @@
 {% if success %}
 <div x-init="showCNVModal = false"></div>
 <script>
-    const newCNV = {{ cnv_data|safe }};
-    table.addData([newCNV]); // Add the new CNV data to the table
-    table.redraw(); // Refresh the table to reflect the changes
+    const updatedCNVs = {{ cnvs_data|safe }};
+    table.setData(updatedCNVs); // Replace the table data with the updated CNVs
 </script>
 {% endif %}
 

@@ -1490,18 +1490,26 @@ def cnv_edit(request):
                 cnv_json={"user_cnv": roi, "user_copy_number": cn},
             )
 
-            
 
-            cnv_data = {
-                    "cnv_pk": cnv.pk,
-                    "VariantID": cnv.variant_id,
-                    "chr_info": cnv.cnv_json.get("user_cnv", ""),
-                    "state_info": cnv.cnv_json.get("state_info", ""),
-                    "total_score": cnv.cnv_json.get("total_score", ""),
-                    "Classification": cnv.cnv_json.get("Classification", ""),
-                    "length_info": cnv.cnv_json.get("length_info", ""),
-                    "numsnp_info": cnv.cnv_json.get("numsnp_info", ""),
-            }
+            # Fetch all CNVs for the ChipSample
+            cnvs = CNV.objects.filter(chipsample=chipsample).values(
+                "id", "cnv_json", "variant_id"
+            )
+
+            # Serialize CNVs for JSON response
+            cnvs_data = [
+                {
+                    "cnv_pk": cnv["id"],
+                    "VariantID": cnv["variant_id"],
+                    "chr_info": cnv["cnv_json"].get("user_cnv", ""),
+                    "state_info": cnv["cnv_json"].get("state_info", ""),
+                    "total_score": cnv["cnv_json"].get("total_score", ""),
+                    "Classification": cnv["cnv_json"].get("Classification", ""),
+                    "length_info": cnv["cnv_json"].get("length_info", ""),
+                    "numsnp_info": cnv["cnv_json"].get("numsnp_info", ""),
+                }
+                for cnv in cnvs
+            ]
 
             if not settings.DEBUG:
                 HOST_IP = get_default_gateway_linux()
