@@ -74,15 +74,6 @@
   </article>
 </dialog>
 
-<div
-    id="chipsample-{{ chipsample.pk }}-tab-content"
-    hx-get="{% url 'chipsample_tab_content' %}"
-    hx-trigger="refreshContent from:body"
-    hx-vals='{"chipsample_pk": "{{ chipsample.pk }}"}'
->
-    <!-- Content will be loaded here -->
-</div>
-
 <style>
   dialog article {
     max-width: unset;

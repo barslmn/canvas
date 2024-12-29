@@ -3,14 +3,25 @@
 </div>
 
 {% if success %}
-<div 
-    x-init="
-        $nextTick(() => {
-            showCNVModal = false;
-            htmx.trigger('#chipsample-{{ chipsample.pk }}-tab-content', 'refreshContent')
-        })
-    "
-></div>
+<div x-init="showCNVModal = false"></div>
+<script>
+    // Create new row object with all the CNV data
+    const newCNVData = {
+        cnv_pk: "{{ cnv.pk }}",
+        VariantID: "{{ cnv.variant_id }}",
+        chr_info: "{{ cnv.cnv_json.user_cnv }}",
+        state_info: "{{ cnv.cnv_json.state_info }}",
+        total_score: "{{ cnv.cnv_json.Total score }}",
+        Classification: "{{ cnv.cnv_json.Classification }}",
+        length_info: "{{ cnv.cnv_json.length_info }}",
+        numsnp_info: "{{ cnv.cnv_json.numsnp_info }}",
+        addToReport: false
+    };
+    
+    // Add the new row to the table
+    table.addData([newCNVData], true);
+</script>
+{% endif %}
 
 <style>
     .cnv-edit-result {
@@ -29,4 +40,3 @@
         border: 1px solid #f5c6cb;
     }
 </style>
-{% endif %}
