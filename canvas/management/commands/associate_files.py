@@ -234,7 +234,7 @@ class Command(BaseCommand):
                             cnv_data[variant_id] = {
                                 "iscn": iscn,
                                 "state_info": cn,
-                                "length_info": length,
+                                "length_info": f"length={length}",
                                 "numsnp_info": numsnp,
                             }
 

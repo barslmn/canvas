@@ -29,6 +29,7 @@ class ChipAdmin(admin.ModelAdmin):
     list_display = ["chip_id", "lot", "entry_date", "protocol_start_date", "scan_date"]
     search_fields = ["chip_id", "lot__lot_number"]
 
+
 class ChipTypeAdmin(admin.ModelAdmin):
     list_display = [
         "name",
@@ -111,7 +112,7 @@ class VCFAdmin(admin.ModelAdmin):
 
 class BedGraphAdmin(admin.ModelAdmin):
     list_display = ["chipsample", "bedgraph", "bedgraph_type", "protocol_id"]
-    search_fields = ["bedgraph", "protocol_id"]
+    search_fields = ["bedgraph", "chipsample__sample__protocol_id"]
 
     autocomplete_fields = ["chipsample"]
 

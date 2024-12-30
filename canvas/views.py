@@ -1563,6 +1563,7 @@ tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) \\
                     shell=True,
                 )
 
+            cnv = CNV.objects.get(pk=cnv.pk)
             cnv_json = cnv.cnv_json
             cnv_json["cnv_pk"] = cnv.pk
             cnv_json["total_score"] = cnv_json.pop("Total score", None)
