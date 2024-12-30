@@ -1490,27 +1490,6 @@ def cnv_edit(request):
                 cnv_json={"user_cnv": roi, "user_copy_number": cn},
             )
 
-
-            # Fetch all CNVs for the ChipSample
-            cnvs = CNV.objects.filter(chipsample=chipsample).values(
-                "id", "cnv_json", "variant_id"
-            )
-
-            # Serialize CNVs for JSON response
-            cnvs_data = [
-                {
-                    "cnv_pk": cnv["id"],
-                    "VariantID": cnv["variant_id"],
-                    "chr_info": cnv["cnv_json"].get("user_cnv", ""),
-                    "state_info": cnv["cnv_json"].get("state_info", ""),
-                    "total_score": cnv["cnv_json"].get("total_score", ""),
-                    "Classification": cnv["cnv_json"].get("Classification", ""),
-                    "length_info": cnv["cnv_json"].get("length_info", ""),
-                    "numsnp_info": cnv["cnv_json"].get("numsnp_info", ""),
-                }
-                for cnv in cnvs
-            ]
-
             if not settings.DEBUG:
                 HOST_IP = get_default_gateway_linux()
                 MINIO_IP = socket.gethostbyname("minio")
@@ -1584,13 +1563,18 @@ tsp -f -D $(tsp -l | grep {label} | cut -d" " -f1) \\
                     shell=True,
                 )
 
+            cnv_json = cnv.cnv_json
+            cnv_json["cnv_pk"] = cnv.pk
+            cnv_json["total_score"] = cnv_json.pop("Total score", None)
+            cnv_json["addToReport"] = False
+
             return render(
                 request,
                 "canvas/partials/cnv_edit_success.html",
                 {
                     "success": True,
                     "message": "CNV successfully added",
-                    "cnv": json.dumps(cnv.cnv_json),
+                    "cnv_json": json.dumps(cnv_json),
                 },
             )
 
