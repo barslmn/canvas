@@ -944,10 +944,11 @@ def chipsample_tab_content(request):
     cnvs = []
     for cnv in chipsample.cnv.all():
         cnv_json = cnv.cnv_json
-        cnv_json["cnv_pk"] = cnv.pk
-        cnv_json["total_score"] = cnv_json.pop("Total score", None)
-        cnv_json["addToReport"] = False
-        cnvs.append(cnv_json)
+        if "Total score" in cnv_json.keys():
+            cnv_json["cnv_pk"] = cnv.pk
+            cnv_json["total_score"] = cnv_json.pop("Total score", None)
+            cnv_json["addToReport"] = False
+            cnvs.append(cnv_json)
 
     bedgraphs = chipsample.bedgraph.all()
     lrr_bedgraph = None

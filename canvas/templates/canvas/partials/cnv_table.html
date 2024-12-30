@@ -127,6 +127,11 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
     layout:"fitData",
     index:"cnv_pk",
     movableColumns: true,
+    persistenceMode: "local",
+    persistenceID: "cnv-table", // Use the same persistenceID for all CNV tables
+    persistence: {
+        columns: true,    // This enables column order persistence
+    },
     rowContextMenu: rowMenu,
     rowHeader:{width:30, minWidth:30, hozAlign:"center", resizable:false, headerSort:false},
     height:"40vh",
@@ -242,6 +247,13 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             headerFilter:"list",
             headerFilterParams:{
                 values:Object.keys(classificationOrder)
+            },
+            formatter: function(cell) {
+                const value = cell.getValue();
+                const classification = value ? value.toLowerCase() : '';
+                const color = classificationColors[classification] || '';
+
+                return `<span style="display: block; background-color: ${color}; padding: 4px; border-radius: 4px; text-align: center; color: ${['pathogenic', 'likely pathogenic', 'likely benign', 'benign'].includes(classification) ? '#ffffff' : '#000000'}">${value}</span>`;
             },
             sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
                 var aValue = a ? a.toLowerCase() : '';
