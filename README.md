@@ -1,5 +1,11 @@
 # Canvas
 
+<div align="center">
+  <img src="canvas/static/canvas/img/canvas_logo.png" alt="Canvas Logo" width="400"/>
+  <br/>
+  <br/>
+</div>
+
 Canvas is a Django-based web application for managing and analyzing chip samples, variants, and generating reports.
 
 ## Features
@@ -34,6 +40,39 @@ The application will be available at `http://localhost:8000` (or your configured
 To stop the application:
 ```bash
 docker compose down
+```
+
+## Testing and CI/CD
+
+The project uses GitHub Actions for continuous integration and deployment. On each push to the `release` branch, the following checks are performed:
+
+### Code Quality
+- **Flake8**: Checks for syntax errors and warnings
+- **Black**: Ensures consistent code formatting
+- **isort**: Maintains properly sorted imports
+
+### Django Tests
+- Runs the Django test suite using `python manage.py test`
+- Tests are executed in a clean environment with each CI run
+
+### Docker Build
+After all tests pass:
+- Builds the Docker image
+- Pushes to GitHub Container Registry (ghcr.io)
+- Tags with both `latest` and the commit SHA
+
+To run tests locally:
+```bash
+# Install test dependencies
+pip install flake8 black isort
+
+# Run linting
+flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+black . --check
+isort . --check-only --profile black
+
+# Run Django tests
+python manage.py test
 ```
 
 ## Project Structure

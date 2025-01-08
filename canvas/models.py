@@ -204,7 +204,11 @@ class IDAT(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=["idat"])],
     )
     chipsample = models.ForeignKey(
-        ChipSample, on_delete=models.PROTECT, null=True, blank=True
+        ChipSample,
+        on_delete=models.PROTECT,
+        related_name="idat",
+        null=True,
+        blank=True,
     )
 
 
