@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   watchtower:
     image: containrrr/watchtower
@@ -37,7 +39,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   canvas:
-    image: yserdem/canvas-web:latest
+    image: ghcr.io/gen-era/canvas:latest
     command: bash /app/start.sh
     environment:
       - HOST_NAME=cnvcanvas.com
@@ -85,9 +87,9 @@ services:
     restart: always
     user: postgres
     environment:
-      - POSTGRES_DB=canvasdb  # Changed from canvas to canvasdb
+      - POSTGRES_DB=canvasdb
       - POSTGRES_USER=canvas
-      - POSTGRES_PASSWORD=canvaspass  # Using the password directly instead of a secret
+      - POSTGRES_PASSWORD=canvaspass
     volumes:
       - db-data:/var/lib/postgresql/data
     expose:
@@ -107,13 +109,11 @@ services:
     command: server /data --console-address ":9001" --address ":9000"
     labels:
       - "traefik.enable=true"
-
       - "traefik.http.routers.minio.service=minio"
       - "traefik.http.routers.minio.rule=Host(`minio.cnvcanvas.com`)"
       - "traefik.http.routers.minio.entrypoints=websecure"
       - "traefik.http.routers.minio.tls.certresolver=myresolver"
       - "traefik.http.services.minio.loadbalancer.server.port=9000"
-
       - "traefik.http.routers.minio-admin.service=minio-admin"
       - "traefik.http.routers.minio-admin.rule=Host(`admin.minio.cnvcanvas.com`)"
       - "traefik.http.routers.minio-admin.entrypoints=websecure"
@@ -144,4 +144,4 @@ secrets:
   minio-access-key:
     file: minio/access-key.txt
   minio-secret-key:
-    file: minio/secret-key.txt
+    file: minio/secret-key.txt 

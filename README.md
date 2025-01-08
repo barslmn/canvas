@@ -21,6 +21,7 @@ Canvas is a Django-based web application for managing and analyzing chip samples
 
 - Docker
 - Docker Compose
+- GitHub account with access to the repository
 
 ## Installation
 
@@ -30,7 +31,13 @@ git clone [repository-url]
 cd canvas
 ```
 
-2. Start the application using Docker Compose:
+2. Login to GitHub Container Registry:
+```bash
+echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_USERNAME --password-stdin
+```
+Note: You'll need a GitHub Personal Access Token with `read:packages` scope.
+
+3. Start the application using Docker Compose:
 ```bash
 docker compose up -d
 ```
