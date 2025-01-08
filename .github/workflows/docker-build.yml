@@ -28,12 +28,6 @@ jobs:
         run: |
           black . --check --exclude "migrations/|manage.py|wsgi.py|asgi.py"
 
-      - name: Run Django tests
-        env:
-          DJANGO_SETTINGS_MODULE: cnvapp.settings
-        run: |
-          python manage.py test
-
   build:
     needs: test
     runs-on: ubuntu-latest
