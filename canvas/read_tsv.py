@@ -50,15 +50,19 @@ def read_sample_from_tsv(file_path):
                 # Validate 'sample_type' field
                 if sample_type:
                     # Attempt to find an exact match first
-                    sample_type_validated_qs = SampleType.objects.filter(name__iexact=sample_type)
-                    
+                    sample_type_validated_qs = SampleType.objects.filter(
+                        name__iexact=sample_type
+                    )
+
                     if sample_type_validated_qs.count() == 1:
                         # Exact match found
                         sample_type_validated = sample_type_validated_qs.first()
                     else:
                         # No exact match, fall back to partial match (first 8 characters)
-                        sample_type_validated_qs = SampleType.objects.filter(name__icontains=sample_type[:8])
-                        
+                        sample_type_validated_qs = SampleType.objects.filter(
+                            name__icontains=sample_type[:8]
+                        )
+
                         if sample_type_validated_qs.count() == 1:
                             # Unique match found based on first 8 characters
                             sample_type_validated = sample_type_validated_qs.first()
@@ -108,7 +112,11 @@ def read_sample_from_tsv(file_path):
                 # Create a dictionary for the current row
                 row_dict = {
                     "prot_id": prot_id.strip() if isinstance(prot_id, str) else prot_id,
-                    "concentration": concentration.strip() if isinstance(concentration, float) else concentration,
+                    "concentration": (
+                        concentration.strip()
+                        if isinstance(concentration, float)
+                        else concentration
+                    ),
                     "inst": inst_validated,
                     "arrival_date": arrival_formatted,
                     "study_date": study_formatted,

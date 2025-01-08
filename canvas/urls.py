@@ -41,12 +41,17 @@ urlpatterns = [
     path("save_acmg", views.save_acmg, name="save_acmg"),
     path("get_cnv_modal", views.get_cnv_modal, name="get_cnv_modal"),
     path("cnv_edit", views.cnv_edit, name="cnv_edit"),
-
-    path('download_samples/', views.download_samples, name='download_samples'),
-    path('match_chip_samples/', views.match_chip_samples, name='match_chip_samples'),
+    path("download_samples/", views.download_samples, name="download_samples"),
+    path("match_chip_samples/", views.match_chip_samples, name="match_chip_samples"),
     # Chip download URLs
-    path('download/chip/<int:chip_id>/<str:file_type>/', views.download_chip_files, name='download_chip_files'),
-    path('download/chipsample/<int:chipsample_id>/<str:file_type>/', 
-         views.download_chipsample_files, 
-         name='download_chipsample_files'),
+    path(
+        "download/chip/<int:chip_id>/<str:file_type>/",
+        views.download_chip_files,
+        name="download_chip_files",
+    ),
+    path(
+        "download/chipsample/<int:chipsample_id>/<str:file_type>/",
+        views.download_chipsample_files,
+        name="download_chipsample_files",
+    ),
 ]

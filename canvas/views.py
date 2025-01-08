@@ -60,7 +60,7 @@ def get_default_gateway_linux():
 
 
 def get_version():
-    with open(settings.BASE_DIR.joinpath(".git/ORIG_HEAD")) as f:
+    with open(settings.BASE_DIR.joinpath(".git/FETCH_HEAD")) as f:
         return f.read().splitlines()[0][:6]
 
 

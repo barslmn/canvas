@@ -5,24 +5,27 @@ from canvas.models import Sample, Institution, SampleType
 from django.core.exceptions import ValidationError
 from datetime import datetime
 
+
 class Command(BaseCommand):
-    help = 'Import samples from an Excel file'
+    help = "Import samples from an Excel file"
 
     def add_arguments(self, parser):
-        parser.add_argument('file_path', type=str, help='The path to the Excel file')
+        parser.add_argument("file_path", type=str, help="The path to the Excel file")
 
     def handle(self, *args, **kwargs):
-        file_path = kwargs['file_path']
+        file_path = kwargs["file_path"]
         data = pd.read_excel(file_path)
 
         for index, row in data.iterrows():
-            institution_name = row['Kurum Adı']
-            sample_type_name = row['Numune Tipi']
-            protocol_id = row['Lab No']
-            arrival_date_str = str(row['Geliş Tarihi']).strip()
-            study_date_str = str(row['Çalışma Tarihi']).strip()
-            description = row['Açıklama'] if pd.notna(row['Açıklama']) else ''
-            concentration_str = str(row['Kons']).strip() if pd.notna(row['Kons']) else '0'
+            institution_name = row["Kurum Adı"]
+            sample_type_name = row["Numune Tipi"]
+            protocol_id = row["Lab No"]
+            arrival_date_str = str(row["Geliş Tarihi"]).strip()
+            study_date_str = str(row["Çalışma Tarihi"]).strip()
+            description = row["Açıklama"] if pd.notna(row["Açıklama"]) else ""
+            concentration_str = (
+                str(row["Kons"]).strip() if pd.notna(row["Kons"]) else "0"
+            )
 
             # Parse dates
             try:
@@ -42,7 +45,7 @@ class Command(BaseCommand):
 
             if not study_date:
                 # If it's not a valid date, add it to the description
-                if study_date_str and study_date_str != 'nan':
+                if study_date_str and study_date_str != "nan":
                     if description:
                         description += f" / {study_date_str}"
                     else:
@@ -56,17 +59,17 @@ class Command(BaseCommand):
 
             institution, _ = Institution.objects.get_or_create(name=institution_name)
             sample_type, _ = SampleType.objects.get_or_create(name=sample_type_name)
-            
+
             sample, created = Sample.objects.get_or_create(
                 protocol_id=protocol_id,
                 defaults={
-                    'arrival_date': arrival_date,
-                    'study_date': study_date,
-                    'description': description,
-                    'institution': institution,
-                    'sample_type': sample_type,
-                    'concentration': concentration,
-                }
+                    "arrival_date": arrival_date,
+                    "study_date": study_date,
+                    "description": description,
+                    "institution": institution,
+                    "sample_type": sample_type,
+                    "concentration": concentration,
+                },
             )
 
             if not created:
@@ -79,7 +82,10 @@ class Command(BaseCommand):
                 try:
                     sample.save()
                 except ValidationError as e:
-                    self.stdout.write(self.style.ERROR(f'Error saving sample {protocol_id}: {e}'))
+                    self.stdout.write(
+                        self.style.ERROR(f"Error saving sample {protocol_id}: {e}")
+                    )
 
-        self.stdout.write(self.style.SUCCESS('Successfully imported samples from Excel'))
-
+        self.stdout.write(
+            self.style.SUCCESS("Successfully imported samples from Excel")
+        )
