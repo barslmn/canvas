@@ -2,21 +2,21 @@ from django.contrib import admin
 
 # Register your models here.
 from .models import (
-    Lot,
-    Genome,
-    ChipType,
-    Chip,
-    SampleType,
-    Institution,
-    Sample,
-    ChipSample,
-    IDAT,
+    CNV,
     GTC,
+    IDAT,
     VCF,
     BedGraph,
-    CNV,
+    Chip,
+    ChipSample,
+    ChipType,
     Classification,
+    Genome,
+    Institution,
+    Lot,
     Report,
+    Sample,
+    SampleType,
 )
 
 

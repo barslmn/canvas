@@ -1,9 +1,6 @@
-from django.core.validators import RegexValidator, FileExtensionValidator
-from django.core.exceptions import ValidationError
-
+from django.contrib.auth.models import Group, User
+from django.core.validators import FileExtensionValidator, RegexValidator
 from django.db import models
-from django.contrib.auth.models import User, Group
-
 
 # Create your models here.
 

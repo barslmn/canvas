@@ -1,11 +1,12 @@
-import re
-from minio import Minio
-from django.core.management.base import BaseCommand
-from canvas.models import ChipSample, BedGraph, CNV, Report, Classification
 import csv
+import re
 import tempfile
 from collections import defaultdict
+
+from canvas.models import CNV, BedGraph, ChipSample, Classification, Report
 from django.conf import settings
+from django.core.management.base import BaseCommand
+from minio import Minio
 
 
 class Command(BaseCommand):

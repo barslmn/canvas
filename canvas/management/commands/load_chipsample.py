@@ -1,18 +1,17 @@
+from datetime import datetime
+
 import pandas as pd
-from django.core.management.base import BaseCommand
 from canvas.models import (
     Chip,
+    ChipSample,
     ChipType,
+    Institution,
+    Lot,
     Sample,
     SampleType,
-    Institution,
-    ChipSample,
-    Lot,
 )
-from django.utils.dateparse import parse_date
 from django.core.exceptions import ValidationError
-import re
-from datetime import datetime
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):
