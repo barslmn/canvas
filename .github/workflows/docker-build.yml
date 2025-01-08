@@ -30,7 +30,7 @@ jobs:
 
       - name: Run Django tests
         env:
-          DJANGO_SETTINGS_MODULE: canvas.settings
+          DJANGO_SETTINGS_MODULE: cnvapp.settings
         run: |
           python manage.py test
 
