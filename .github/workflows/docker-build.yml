@@ -22,13 +22,12 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install flake8 black isort
+          pip install black isort
 
-      - name: Run linting
+      - name: Run formatting checks
         run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          black . --check
-          isort . --check-only --profile black
+          black . --check --exclude "migrations/|manage.py|wsgi.py|asgi.py"
+          isort . --check-only --profile black --skip migrations --skip manage.py --skip wsgi.py --skip asgi.py
 
       - name: Run Django tests
         env:

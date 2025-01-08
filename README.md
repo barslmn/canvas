@@ -21,7 +21,6 @@ Canvas is a Django-based web application for managing and analyzing chip samples
 
 - Docker
 - Docker Compose
-- GitHub account with access to the repository
 
 ## Installation
 
@@ -31,13 +30,7 @@ git clone [repository-url]
 cd canvas
 ```
 
-2. Login to GitHub Container Registry:
-```bash
-echo $GITHUB_TOKEN | docker login ghcr.io -u $GITHUB_USERNAME --password-stdin
-```
-Note: You'll need a GitHub Personal Access Token with `read:packages` scope.
-
-3. Start the application using Docker Compose:
+2. Start the application using Docker Compose:
 ```bash
 docker compose up -d
 ```
@@ -54,9 +47,8 @@ docker compose down
 The project uses GitHub Actions for continuous integration and deployment. On each push to the `release` branch, the following checks are performed:
 
 ### Code Quality
-- **Flake8**: Checks for syntax errors and warnings
-- **Black**: Ensures consistent code formatting
-- **isort**: Maintains properly sorted imports
+- **Black**: Ensures consistent code formatting (excluding Django-generated files)
+- **isort**: Maintains properly sorted imports (excluding Django-generated files)
 
 ### Django Tests
 - Runs the Django test suite using `python manage.py test`
@@ -71,12 +63,11 @@ After all tests pass:
 To run tests locally:
 ```bash
 # Install test dependencies
-pip install flake8 black isort
+pip install black isort
 
-# Run linting
-flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-black . --check
-isort . --check-only --profile black
+# Run formatting checks
+black . --check --exclude "migrations/|manage.py|wsgi.py|asgi.py"
+isort . --check-only --profile black --skip migrations --skip manage.py --skip wsgi.py --skip asgi.py
 
 # Run Django tests
 python manage.py test
@@ -107,4 +98,4 @@ The project includes custom management commands:
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
