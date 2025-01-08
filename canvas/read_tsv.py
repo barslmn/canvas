@@ -1,6 +1,5 @@
 import csv
 from datetime import datetime
-
 from canvas.models import Institution, SampleType
 
 

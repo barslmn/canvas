@@ -1,8 +1,11 @@
-from datetime import datetime
+#!/usr/bin/env python3
+
+# your_app/management/commands/load_chip_excel.py
 
 import pandas as pd
-from canvas.models import Chip, ChipType, Lot
 from django.core.management.base import BaseCommand
+from canvas.models import Lot, Chip, ChipType
+from datetime import datetime
 
 
 class Command(BaseCommand):

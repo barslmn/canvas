@@ -1,10 +1,9 @@
-from datetime import datetime
-
 import pandas as pd
-from canvas.models import Institution, Sample, SampleType
-from django.core.exceptions import ValidationError
 from django.core.management.base import BaseCommand
 from django.utils.dateparse import parse_date
+from canvas.models import Sample, Institution, SampleType
+from django.core.exceptions import ValidationError
+from datetime import datetime
 
 
 class Command(BaseCommand):
