@@ -75,12 +75,24 @@ jobs:
           echo "GIT_COMMIT_HASH=${{ github.sha }}" >> ./envfile
           echo "GITHUB_REPOSITORY=${{ github.repository }}" >> ./envfile
 
+      - name: does my file exist?
+        run: |
+          head "canvas-genera/docker-compose.yml"
+
       - name: Docker Stack Deploy
         uses: cssnr/stack-deploy-action@v1
         with:
           name: canvas
           file: canvas-genera/docker-compose.yml
+          user: canvas
           host: cnvcanvas.com
-          user: deploy
-          ssh_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
+          ssh_key: ${{ secrets.CANVASFIXCLOUDDEPLOYKEY }}
           env_file: ./envfile
+
+      # If the deployment fails, we can see the SSH connection details
+      - name: Debug SSH connection
+        if: failure()
+        run: |
+          ssh -v -o StrictHostKeyChecking=no canvas@cnvcanvas.com 'echo "SSH connection test"'
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.CANVASFIXCLOUDDEPLOYKEY }}
