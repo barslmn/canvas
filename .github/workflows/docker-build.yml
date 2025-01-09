@@ -56,24 +56,24 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout private config repo
-        uses: actions/checkout@v4
-        with:
-          repository: gen-era/canvas-genera
-          token: ${{ secrets.CANVAS }}
-          path: canvas-genera
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout private config repo
+  #       uses: actions/checkout@v4
+  #       with:
+  #         repository: gen-era/canvas-genera
+  #         token: ${{ secrets.CANVAS }}
+  #         path: canvas-genera
 
 
-      - name: Docker Stack Deploy
-        uses: cssnr/stack-deploy-action@v1
-        with:
-          name: canvas
-          file: canvas-genera/docker-compose.yml
-          user: canvas
-          host: cnvcanvas.com
-          ssh_key: ${{ secrets.CANVASFIXCLOUDDEPLOYKEY }}
-          env_file: ./envfile
+  #     - name: Docker Stack Deploy
+  #       uses: cssnr/stack-deploy-action@v1
+  #       with:
+  #         name: canvas
+  #         file: canvas-genera/docker-compose.yml
+  #         user: canvas
+  #         host: cnvcanvas.com
+  #         ssh_key: ${{ secrets.CANVASFIXCLOUDDEPLOYKEY }}
+  #         env_file: ./envfile
