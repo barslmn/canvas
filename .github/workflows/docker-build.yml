@@ -67,17 +67,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: gen-era/canvas-genera
-          token: ${{ secrets.CanvasFixcloudDeployKey }}
+          token: ${{ secrets.CANVASFGPATOKEN }}
           path: canvas-genera
 
       - name: Create env file
         run: |
           echo "GIT_COMMIT_HASH=${{ github.sha }}" >> ./envfile
           echo "GITHUB_REPOSITORY=${{ github.repository }}" >> ./envfile
-
-      - name: does my file exist?
-        run: |
-          head "canvas-genera/docker-compose.yml"
 
       - name: Docker Stack Deploy
         uses: cssnr/stack-deploy-action@v1
