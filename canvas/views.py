@@ -23,6 +23,7 @@ from io import BytesIO
 import os
 from wsgiref.util import FileWrapper
 from minio import Minio
+from django.contrib.contenttypes.models import ContentType
 
 from canvas.models import (
     IDAT,
@@ -35,6 +36,7 @@ from canvas.models import (
     Report,
     CNV,
     Classification,
+    Note,
 )
 
 from canvas.read_tsv import read_sample_from_tsv
@@ -561,6 +563,9 @@ def create_report(request):
             cnv.update(classification.classification_json)
             cnv["Classification"] = classification.classification_json["classification"]
             cnv["Total score"] = classification.classification_json["total_score"]
+            cnv["notes"] = cnv.notes.filter(user=request.user).values_list(
+                "content", flat=True
+            )
         else:
             cnv["Total score"] = cnv["total_score"]
     chipsample_pk = request.POST.get("chipsample_pk")
@@ -568,6 +573,13 @@ def create_report(request):
     chip_id = chipsample.chip.chip_id
     chip_type = chipsample.chip.chip_type.name
     version = get_version()
+
+    cnvs = {
+        "chipsample_notes": chipsample.notes.filter(user=request.user).values_list(
+            "content", flat=True
+        ),
+        "cnvs": cnvs,
+    }
 
     if not settings.DEBUG:
         HOST_IP = get_default_gateway_linux()
@@ -1204,3 +1216,62 @@ def download_chipsample_files(request, chipsample_id, file_type):
         return HttpResponseForbidden(f"No accessible {file_type} files found")
 
     return create_zip_response(files, f"chipsample_{chipsample_id}_{file_type}.zip")
+
+
+@login_required
+def add_note(request):
+    if request.method == "POST":
+        content = request.POST.get("content")
+        content_type_str = request.POST.get("content_type")
+        object_id = request.POST.get("object_id")
+
+        # Get the content type
+        model = apps.get_model("canvas", content_type_str.capitalize())
+        content_type = ContentType.objects.get_for_model(model)
+
+        # Get the object
+        obj = model.objects.get(id=object_id)
+
+        # Create the note
+        Note.objects.create(
+            content=content,
+            user=request.user,
+            content_type=content_type,
+            object_id=object_id,
+        )
+
+        return render(
+            request,
+            "canvas/partials/notes.html",
+            {
+                "object": obj,
+                "content_type": content_type_str,
+                "user": request.user,
+            },
+        )
+
+
+@login_required
+def delete_note(request, note_id):
+    if request.method == "DELETE":
+        note = get_object_or_404(Note, id=note_id)
+
+        # Get the object and content type before deleting the note
+        obj = note.content_object
+        content_type_str = note.content_type.model
+
+        # Only allow the note creator or staff to delete
+        if request.user == note.user or request.user.is_staff:
+            note.delete()
+
+            return render(
+                request,
+                "canvas/partials/notes.html",
+                {
+                    "object": obj,
+                    "content_type": content_type_str,
+                    "user": request.user,
+                },
+            )
+        
+        return HttpResponseForbidden()

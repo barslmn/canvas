@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.contenttypes.models import ContentType
+from django.utils.html import format_html
 
 # Register your models here.
 from .models import (
@@ -17,6 +19,7 @@ from .models import (
     CNV,
     Classification,
     Report,
+    Note,
 )
 
 
@@ -143,6 +146,57 @@ class ClassificationAdmin(admin.ModelAdmin):
 class ReportAdmin(admin.ModelAdmin):
     list_display = ["entry_date", "report"]
     autocomplete_fields = ["chipsample"]
+
+
+@admin.register(Note)
+class NoteAdmin(admin.ModelAdmin):
+    list_display = ['content_preview', 'user', 'content_type_str', 'object_link', 'created_at', 'updated_at']
+    list_filter = ['content_type', 'user', 'created_at', 'updated_at']
+    search_fields = ['content', 'user__username', 'object_id']
+    readonly_fields = ['created_at', 'updated_at']
+    raw_id_fields = ['user']
+    date_hierarchy = 'created_at'
+    ordering = ['-created_at']
+
+    def content_preview(self, obj):
+        """Return a truncated version of the content for the list view."""
+        return obj.content[:100] + '...' if len(obj.content) > 100 else obj.content
+    content_preview.short_description = 'Content'
+
+    def content_type_str(self, obj):
+        """Return a human-readable content type."""
+        return obj.content_type.model.title()
+    content_type_str.short_description = 'Type'
+    content_type_str.admin_order_field = 'content_type__model'
+
+    def object_link(self, obj):
+        """Return a link to the related object's admin page."""
+        try:
+            url = f'/admin/{obj.content_type.app_label}/{obj.content_type.model}/{obj.object_id}/change/'
+            return format_html('<a href="{}">{}</a>', url, str(obj.content_object))
+        except:
+            return f'Object {obj.object_id}'
+    object_link.short_description = 'Related Object'
+
+    def get_queryset(self, request):
+        """Optimize the queryset by prefetching related fields."""
+        return super().get_queryset(request).select_related(
+            'user',
+            'content_type'
+        )
+
+    fieldsets = [
+        (None, {
+            'fields': ('content',)
+        }),
+        ('Metadata', {
+            'fields': ('user', 'created_at', 'updated_at')
+        }),
+        ('Content Type Information', {
+            'fields': ('content_type', 'object_id'),
+            'classes': ('collapse',)
+        })
+    ]
 
 
 admin.site.register(Lot)

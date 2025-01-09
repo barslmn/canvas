@@ -2,6 +2,27 @@ from django.core.validators import RegexValidator, FileExtensionValidator
 
 from django.db import models
 from django.contrib.auth.models import User, Group
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericRelation
+
+
+class Note(models.Model):
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+
+    # Generic foreign key fields
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
 
 
 # Create your models here.
@@ -142,6 +163,7 @@ class Sample(models.Model):
     description = models.CharField(max_length=255, null=True)
     sample_type = models.ForeignKey(SampleType, on_delete=models.PROTECT)
     repeat = models.ForeignKey("self", blank=True, null=True, on_delete=models.PROTECT)
+    notes = GenericRelation(Note)
 
     def __str__(self):
         return f"{self.protocol_id}"
@@ -180,6 +202,7 @@ class ChipSample(models.Model):
             ),
         ],
     )
+    notes = GenericRelation(Note)
 
     def __str__(self):
         if self.sample:
@@ -291,6 +314,7 @@ class CNV(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, null=True, blank=True)
     variant_id = models.CharField(max_length=255)
     cnv_json = models.JSONField()
+    notes = GenericRelation(Note)
 
     def __str__(self):
         return f"{self.variant_id}"
@@ -305,6 +329,7 @@ class Classification(models.Model):
         CNV, on_delete=models.PROTECT, related_name="classification"
     )
     classification_json = models.JSONField()
+    notes = GenericRelation(Note)
 
     def __str__(self):
         return f"{self.cnv.variant_id} {self.user} {self.entry_date}"

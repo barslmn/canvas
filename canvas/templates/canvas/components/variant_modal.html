@@ -14,10 +14,46 @@
         <i class="fa-solid fa-xmark pico-color-red-500"></i>
       </a>
     </header>
-    {% include "canvas/components/acmg.html" %}
+
+    <div x-data="{ activeTab: 'acmg' }" style="margin-top: 1em; position: relative;">
+      <!-- Floating Tab Navigation -->
+      <nav style="position: fixed; left: 0.6em; top: 6vh; width: 8vw; border-radius: 2em; border: 1px solid var(--pico-color-gray-200); box-shadow: 0em 0em 0.4em 0em var(--pico-color-gray-200); background: white; padding: 1em;">
+        <div style="display: flex; flex-direction: column; gap: 0.5em;">
+          <button 
+            @click="activeTab = 'acmg'"
+            :class="{ 'active': activeTab === 'acmg' }"
+            class="outline"
+            style="text-align: left; width: 100%;"
+            :style="activeTab === 'acmg' ? 'background-color: var(--pico-color-blue-100);' : ''"
+          >
+            <i class="fa-solid fa-list-check"></i>
+            ACMG
+          </button>
+          <button 
+            @click="activeTab = 'notes'"
+            :class="{ 'active': activeTab === 'notes' }"
+            class="outline"
+            style="text-align: left; width: 100%;"
+            :style="activeTab === 'notes' ? 'background-color: var(--pico-color-blue-100);' : ''"
+          >
+            <i class="fa-solid fa-note-sticky"></i>
+            Notes
+          </button>
+        </div>
+      </nav>
+
+      <!-- Tab Content -->
+      <div style="margin-left: 10vw;">
+        <div x-show="activeTab === 'acmg'" x-transition>
+          {% include "canvas/components/acmg.html" %}
+        </div>
+        <div x-show="activeTab === 'notes'" x-transition>
+          {% include "canvas/partials/notes.html" with object=cnv content_type="cnv" %}
+        </div>
+      </div>
+    </div>
   </article>
 </dialog>
-
 
 {% if success %}
   <div x-init="showVariantModal = false"></div>
@@ -25,8 +61,7 @@
     table.updateData([
       {
         cnv_pk: "{{ cnv.pk }}",
-        Classification:
-          "{{ classification.classification_json.classification }}",
+        Classification: "{{ classification.classification_json.classification }}",
         total_score: "{{ classification.classification_json.total_score }}",
         classification_pk: "{{ classification.pk }}",
       },
