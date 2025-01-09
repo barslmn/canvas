@@ -55,12 +55,20 @@ jobs:
             ghcr.io/${{ github.repository }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout main repo
         uses: actions/checkout@v4
+
+      - name: Checkout private config repo
+        uses: actions/checkout@v4
+        with:
+          repository: gen-era/canvas-genera
+          token: ${{ secrets.CanvasFixcloudDeployKey }}
+          path: canvas-genera
 
       - name: Create env file
         run: |
@@ -70,9 +78,9 @@ jobs:
       - name: Docker Stack Deploy
         uses: cssnr/stack-deploy-action@v1
         with:
-          name: canvas # Replace with your stack name
-          file: docker-stack.yaml # Your docker stack file
-          host: cnvcanvas.com # Replace with your server hostname
-          user: canvas # Your deploy user
-          ssh_key: ${{ secrets.CanvasFixcloudKey }}
+          name: canvas
+          file: canvas-genera/docker-compose.yml
+          host: cnvcanvas.com
+          user: deploy
+          ssh_key: ${{ secrets.DEPLOY_SSH_PRIVATE_KEY }}
           env_file: ./envfile
