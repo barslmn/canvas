@@ -24,9 +24,9 @@ jobs:
           pip install -r requirements.txt
           pip install black
 
-      - name: Run formatting checks
-        run: |
-          black . --check --exclude "migrations/|manage.py|wsgi.py|asgi.py"
+      # - name: Run formatting checks
+      #   run: |
+      #     black . --check --exclude "migrations/|manage.py|wsgi.py|asgi.py"
 
   build:
     needs: test

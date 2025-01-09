@@ -563,8 +563,8 @@ def create_report(request):
             cnv.update(classification.classification_json)
             cnv["Classification"] = classification.classification_json["classification"]
             cnv["Total score"] = classification.classification_json["total_score"]
-            cnv["notes"] = cnv.notes.filter(user=request.user).values_list(
-                "content", flat=True
+            cnv["notes"] = list(
+                cnv.notes.filter(user=request.user).values_list("content", flat=True)
             )
         else:
             cnv["Total score"] = cnv["total_score"]
@@ -575,8 +575,8 @@ def create_report(request):
     version = get_version()
 
     cnvs = {
-        "chipsample_notes": chipsample.notes.filter(user=request.user).values_list(
-            "content", flat=True
+        "chipsample_notes": list(
+            chipsample.notes.filter(user=request.user).values_list("content", flat=True)
         ),
         "cnvs": cnvs,
     }
@@ -1273,5 +1273,5 @@ def delete_note(request, note_id):
                     "user": request.user,
                 },
             )
-        
+
         return HttpResponseForbidden()
