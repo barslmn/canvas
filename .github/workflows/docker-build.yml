@@ -15,8 +15,8 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.13'
-          cache: 'pip'
+          python-version: "3.13"
+          cache: "pip"
 
       - name: Install dependencies
         run: |
@@ -55,3 +55,24 @@ jobs:
             ghcr.io/${{ github.repository }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create env file
+        run: |
+          echo "GIT_COMMIT_HASH=${{ github.sha }}" >> ./envfile
+          echo "GITHUB_REPOSITORY=${{ github.repository }}" >> ./envfile
+
+      - name: Docker Stack Deploy
+        uses: cssnr/stack-deploy-action@v1
+        with:
+          name: canvas # Replace with your stack name
+          file: docker-stack.yaml # Your docker stack file
+          host: cnvcanvas.com # Replace with your server hostname
+          user: canvas # Your deploy user
+          ssh_key: ${{ secrets.CanvasFixcloudKey }}
+          env_file: ./envfile
