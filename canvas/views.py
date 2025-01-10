@@ -557,15 +557,17 @@ def create_report(request):
     cnvs = {cnv["VariantID"]: cnv for cnv in cnvs}
     classification_ids = []
     for variant_id, cnv in cnvs.items():
+        cnv["notes"] = list(
+            CNV.objects.get(pk=cnv["cnv_pk"])
+            .notes.filter(user=request.user)
+            .values_list("content", flat=True)
+        )
         if "classification_pk" in cnv.keys():
             classification_ids.append(cnv["classification_pk"])
             classification = Classification.objects.get(pk=cnv["classification_pk"])
             cnv.update(classification.classification_json)
             cnv["Classification"] = classification.classification_json["classification"]
             cnv["Total score"] = classification.classification_json["total_score"]
-            # Get the CNV model instance and its notes
-            cnv_instance = CNV.objects.get(pk=cnv.get("cnv_pk"))
-            cnv["notes"] = list(cnv_instance.notes.filter(user=request.user).values_list("content", flat=True))
         else:
             cnv["Total score"] = cnv["total_score"]
     chipsample_pk = request.POST.get("chipsample_pk")
