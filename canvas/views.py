@@ -580,7 +580,7 @@ def create_report(request):
 
     cnvs = {
         "chipsample_notes": chipsample_notes,
-        "cnvs": list(cnvs.values()), 
+        "cnvs": cnvs, 
     }
 
     if not settings.DEBUG:
