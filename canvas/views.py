@@ -574,11 +574,13 @@ def create_report(request):
     chip_type = chipsample.chip.chip_type.name
     version = get_version()
 
+    chipsample_notes = list(
+        chipsample.notes.filter(user=request.user).values_list("content", flat=True)
+    )
+
     cnvs = {
-        "chipsample_notes": list(
-            chipsample.notes.filter(user=request.user).values_list("content", flat=True)
-        ),
-        "cnvs": cnvs,
+        "chipsample_notes": chipsample_notes,
+        "cnvs": list(cnvs.values()), 
     }
 
     if not settings.DEBUG:
