@@ -563,11 +563,14 @@ def create_report(request):
             cnv.update(classification.classification_json)
             cnv["Classification"] = classification.classification_json["classification"]
             cnv["Total score"] = classification.classification_json["total_score"]
+            
+            cnv_obj = CNV.objects.get(variant_id=variant_id)
             cnv["notes"] = list(
-                cnv.notes.filter(user=request.user).values_list("content", flat=True)
+                cnv_obj.notes.filter(user=request.user).values_list("content", flat=True)
             )
         else:
             cnv["Total score"] = cnv["total_score"]
+    
     chipsample_pk = request.POST.get("chipsample_pk")
     chipsample = ChipSample.objects.get(id=chipsample_pk)
     chip_id = chipsample.chip.chip_id
