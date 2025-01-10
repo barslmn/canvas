@@ -1,0 +1,16 @@
+<div x-data="{ open: false }" class="dropdown" style="position: relative;">
+  <button 
+    @click="open = !open"
+    class="outline"
+    style="border-radius: 1em; padding: 0; display: flex; align-items: center;"
+  >
+    {% include 'canvas/partials/note_summary.html' %}
+  </button>
+  <div 
+    x-show="open"
+    @click.outside="open = false"
+    style="position: absolute; background: white; border: 1px solid var(--pico-color-gray-200); border-radius: 1em; min-width: 300px; box-shadow: 0 0.5em 1em rgba(0, 0, 0, 0.1); z-index: 100; right: 0; margin-top: 0.5em;"
+  >
+    {% include 'canvas/partials/note_list.html' %}
+  </div>
+</div> 

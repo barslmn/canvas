@@ -1242,7 +1242,7 @@ def add_note(request):
             object_id=object_id,
         )
 
-        return render(
+        response = render(
             request,
             "canvas/partials/notes.html",
             {
@@ -1251,6 +1251,8 @@ def add_note(request):
                 "user": request.user,
             },
         )
+        response["HX-Trigger"] = f"noteCountUpdate-{content_type_str}-{object_id}"
+        return response
 
 
 @login_required
@@ -1261,12 +1263,13 @@ def delete_note(request, note_id):
         # Get the object and content type before deleting the note
         obj = note.content_object
         content_type_str = note.content_type.model
+        object_id = note.object_id
 
         # Only allow the note creator or staff to delete
         if request.user == note.user or request.user.is_staff:
             note.delete()
 
-            return render(
+            response = render(
                 request,
                 "canvas/partials/notes.html",
                 {
@@ -1275,5 +1278,48 @@ def delete_note(request, note_id):
                     "user": request.user,
                 },
             )
+            response["HX-Trigger"] = f"noteCountUpdate-{content_type_str}-{object_id}"
+            return response
 
         return HttpResponseForbidden()
+
+
+@login_required
+def get_note_count(request):
+    if request.method == "GET":
+        object_id = request.GET.get("object_id")
+        content_type_str = request.GET.get("content_type")
+        
+        # Get the content type and object
+        model = apps.get_model("canvas", content_type_str.capitalize())
+        obj = model.objects.get(id=object_id)
+        
+        return render(
+            request,
+            "canvas/partials/note_summary.html",
+            context={
+                "object": obj,
+                "content_type": content_type_str,
+            },
+        )
+
+
+@login_required
+def get_notes(request):
+    if request.method == "POST":
+        object_id = request.POST.get("object_id")
+        content_type_str = request.POST.get("content_type")
+        
+        # Get the content type and object
+        model = apps.get_model("canvas", content_type_str.capitalize())
+        obj = model.objects.get(id=object_id)
+        
+        return render(
+            request,
+            "canvas/partials/note_list.html",
+            context={
+                "object": obj,
+                "content_type": content_type_str,
+                "user": request.user,
+            },
+        )

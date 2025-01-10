@@ -107,116 +107,117 @@
         {{ chipsample.sex_estimate }}
       </div>
 
-      {% include "canvas/partials/notes.html" with object=chipsample content_type="chipsample" %}
-
       <footer style="border-radius:1em; padding:1em;">
         <nav class="d-flex">
           <ul class="d-flex gap-3">
-
             <li>
-
               {% include 'canvas/components/reports.html' %}
             </li>
 
             <li>
-            <details
-              role="list"
-              class="download-menu"
-            >
-              <summary role="button" aria-haspopup="listbox" style="border-radius: 1em; padding: 0;" class="btn btn-primary outline">
-                <div style="display: flex; align-items: center; width: 100%;">
-                  <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
-                    <i class="fa-solid fa-download"></i>
+              <details
+                role="list"
+                class="download-menu"
+              >
+                <summary role="button" aria-haspopup="listbox" style="border-radius: 1em; padding: 0;" class="btn btn-primary outline">
+                  <div style="display: flex; align-items: center; width: 100%;">
+                    <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
+                      <i class="fa-solid fa-download"></i>
+                    </div>
+                    <span style="padding: 0 1em;">Download files</span>
                   </div>
-                  <span style="padding: 0 1em;">Download files</span>
-                </div>
-              </summary>
-              <ul role="listbox">
-                <li>
-                  <a
-                    href="{% url 'download_chipsample_files' chipsample.id 'idats' %}"
-                    >IDATs Download</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="{% url 'download_chipsample_files' chipsample.id 'gtcs' %}"
-                    >GTCs Download</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="{% url 'download_chipsample_files' chipsample.id 'vcfs' %}"
-                    >VCFs Download</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="{% url 'download_chipsample_files' chipsample.id 'bedgraphs' %}"
-                    >BedGraphs Download</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="{% url 'download_chipsample_files' chipsample.id 'reports' %}"
-                    >Reports Download</a
-                  >
-                </li>
-                <li>
-                  <hr />
-                  <a
-                    href="{% url 'download_chipsample_files' chipsample.id 'all' %}"
-                    >Download All Files</a
-                  >
-                </li>
-              </ul>
-            </details>
-        </li>
+                </summary>
+                <ul role="listbox">
+                  <li>
+                    <a
+                      href="{% url 'download_chipsample_files' chipsample.id 'idats' %}"
+                      >IDATs Download</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="{% url 'download_chipsample_files' chipsample.id 'gtcs' %}"
+                      >GTCs Download</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="{% url 'download_chipsample_files' chipsample.id 'vcfs' %}"
+                      >VCFs Download</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="{% url 'download_chipsample_files' chipsample.id 'bedgraphs' %}"
+                      >BedGraphs Download</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="{% url 'download_chipsample_files' chipsample.id 'reports' %}"
+                      >Reports Download</a
+                    >
+                  </li>
+                  <li>
+                    <hr />
+                    <a
+                      href="{% url 'download_chipsample_files' chipsample.id 'all' %}"
+                      >Download All Files</a
+                    >
+                  </li>
+                </ul>
+              </details>
+            </li>
 
-        <li>
-        <div
-          hx-get="{% url 'chipsample_tab_button' %}"
-          hx-target="#tab-buttons"
-          hx-trigger="click"
-          hx-swap="beforeend"
-          hx-on::before-request="
-            const existingTabIds = Array.from(
-                document.getElementsByClassName('tab-button')
-            ).map(e => e.id)
-            const tabId = 'tab-button-{{ chipsample.pk }}';
-            if (existingTabIds.includes(tabId)) {
-                event.preventDefault();  // Stop the request
-                document.getElementById(tabId).click()
-            }
-            "
-          hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
-        >
-          <button
-            class="outline"
-            style="border-radius:1em; padding: 0; display: flex; align-items: center;"
-            hx-get="{% url 'chipsample_tab_content' %}"
-            hx-target="#tab-contents"
-            hx-trigger="click"
-            hx-swap="beforeend"
-            hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
-          >
-            <div
-              hx-get="{% url 'chipsample_sidebar_content' %}"
-              hx-target="#chipsample-sidebar-content"
-              hx-trigger="click"
-              hx-swap="beforeend"
-              hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
-              style="display: flex; align-items: center; width: 100%;"
-            >
-              <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
-                <i class="fa-solid fa-dna"></i>
+            <li>
+              <div
+                hx-get="{% url 'chipsample_tab_button' %}"
+                hx-target="#tab-buttons"
+                hx-trigger="click"
+                hx-swap="beforeend"
+                hx-on::before-request="
+                  const existingTabIds = Array.from(
+                      document.getElementsByClassName('tab-button')
+                  ).map(e => e.id)
+                  const tabId = 'tab-button-{{ chipsample.pk }}';
+                  if (existingTabIds.includes(tabId)) {
+                      event.preventDefault();  // Stop the request
+                      document.getElementById(tabId).click()
+                  }
+                  "
+                hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
+              >
+                <button
+                  class="outline"
+                  style="border-radius:1em; padding: 0; display: flex; align-items: center;"
+                  hx-get="{% url 'chipsample_tab_content' %}"
+                  hx-target="#tab-contents"
+                  hx-trigger="click"
+                  hx-swap="beforeend"
+                  hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
+                >
+                  <div
+                    hx-get="{% url 'chipsample_sidebar_content' %}"
+                    hx-target="#chipsample-sidebar-content"
+                    hx-trigger="click"
+                    hx-swap="beforeend"
+                    hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
+                    style="display: flex; align-items: center; width: 100%;"
+                  >
+                    <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
+                      <i class="fa-solid fa-dna"></i>
+                    </div>
+                    <span style="padding: 0 1em;">View Variants</span>
+                  </div>
+                </button>
               </div>
-              <span style="padding: 0 1em;">View Variants</span>
-            </div>
-          </button>
-        </div>
-        </li>
+            </li>
 
+            <li>
+              {% include 'canvas/components/notes.html' with object=chipsample content_type="chipsample" %}
+            </li>
+
+          </ul>
         </nav>
       </footer>
     </article>

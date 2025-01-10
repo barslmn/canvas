@@ -1,0 +1,22 @@
+<div
+  style="display: flex; align-items: center; width: 100%;"
+  hx-get="{% url 'get_note_count' %}"
+  hx-trigger="noteCountUpdate-{{ content_type }}-{{ object.id }} from:body"
+  hx-target="closest div"
+  hx-swap="outerHTML"
+  hx-vals='{"object_id": "{{ object.id }}", "content_type": "{{ content_type }}"}'
+>
+  {% with note_count=object.notes.count %}
+    {% if note_count == 0 %}
+      <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
+        <i class="fa-solid fa-note-sticky"></i>
+      </div>
+      <span style="padding: 0 1em;">No notes</span>
+    {% else %}
+      <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
+        <i class="fa-solid fa-note-sticky"></i>
+      </div>
+      <span style="padding: 0 1em;">{{ note_count }} Notes</span>
+    {% endif %}
+  {% endwith %}
+</div> 
