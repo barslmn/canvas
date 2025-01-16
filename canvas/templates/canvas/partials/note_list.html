@@ -1,20 +1,30 @@
-<div class="notes-list" style="max-height: 400px; overflow-y: auto; min-width: 300px;">
+<div
+  class="notes-list"
+  style="max-height: 400px; overflow-y: auto; min-width: 300px;"
+>
   {% if object.notes.all %}
     {% for note in object.notes.all %}
-      <article class="note" style="padding: 0.75em; margin: 0.5em; border-radius: 0.5em; background: var(--pico-color-gray-50);">
-        <div style="display: flex; justify-content: space-between; align-items: start;">
+      <article
+        class="note"
+        style="padding: 0.75em; margin: 0.5em; border-radius: 0.5em; background: var(--pico-color-gray-50);"
+      >
+        <div
+          style="display: flex; justify-content: space-between; align-items: start;"
+        >
           <div>
             <strong>{{ note.user.username }}</strong>
             <small>{{ note.created_at|date:"Y-m-d H:i" }}</small>
           </div>
           {% if user == note.user %}
             <div>
-              <a href="#" 
+              <a
+                href="#"
                 hx-delete="{% url 'delete_note' note.id %}"
                 hx-target="closest .notes-list"
                 hx-swap="innerHTML"
                 @click="$event.stopPropagation()"
-                class="delete-note">
+                class="delete-note"
+              >
                 <i class="fa-solid fa-trash pico-color-red-500"></i>
               </a>
             </div>
@@ -24,17 +34,36 @@
       </article>
     {% endfor %}
   {% else %}
-    <p style="padding: 0.75em; margin: 0.5em; color: var(--pico-color-gray-500);">No notes yet.</p>
+    <p
+      style="padding: 0.75em; margin: 0.5em; color: var(--pico-color-gray-500);"
+    >
+      No notes yet.
+    </p>
   {% endif %}
 
-  <form hx-post="{% url 'add_note' %}" 
-        hx-target="closest .notes-list"
-        hx-swap="innerHTML"
-        @submit="$event.stopPropagation()"
-        style="padding: 0.75em; margin: 0.5em; border-top: 1px solid var(--pico-color-gray-200);">
-    <input type="hidden" name="content_type" value="{{ content_type }}">
-    <input type="hidden" name="object_id" value="{{ object.id }}">
-    <textarea name="content" placeholder="Add a note..." required style="margin: 0.5em 0; width: 100%; min-height: 60px;" @click="$event.stopPropagation()"></textarea>
-    <button type="submit" class="outline" style="width: 100%;" @click="$event.stopPropagation()">Add Note</button>
+  <form
+    hx-post="{% url 'add_note' %}"
+    hx-target="closest .notes-list"
+    hx-swap="innerHTML"
+    @submit="$event.stopPropagation()"
+    style="padding: 0.75em; margin: 0.5em; border-top: 1px solid var(--pico-color-gray-200);"
+  >
+    <input type="hidden" name="content_type" value="{{ content_type }}" />
+    <input type="hidden" name="object_id" value="{{ object.id }}" />
+    <textarea
+      name="content"
+      placeholder="Add a note..."
+      required
+      style="margin: 0.5em 0; width: 100%; min-height: 60px;"
+      @click="$event.stopPropagation()"
+    ></textarea>
+    <button
+      type="submit"
+      class="outline"
+      style="width: 100%;"
+      @click="$event.stopPropagation()"
+    >
+      Add Note
+    </button>
   </form>
-</div> 
+</div>

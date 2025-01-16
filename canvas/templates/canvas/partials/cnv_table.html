@@ -145,9 +145,8 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
                 return `<a href="#"
                            hx-post="{% url 'get_acmg' %}"
                            hx-vals='{"cnv_pk": `+ cell.getRow().getData()["cnv_pk"] + `}'
-                           hx-target="#variantModal"
-                           hx-swap="outerHTML"
-                           @click="showVariantModal = true" > <i class="fa-solid fa-circle-info"></i></a>`;
+                           hx-target="main"
+                           hx-swap="beforeend"> <i class="fa-solid fa-circle-info"></i></a>`;
             },
         },
         {
