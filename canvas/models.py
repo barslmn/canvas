@@ -95,6 +95,11 @@ class ChipType(models.Model):
         validators=[FileExtensionValidator(allowed_extensions=["pfb"])],
         blank=True,
     )
+    hmm = models.FileField(
+        upload_to=analysis_files_directory_path,
+        validators=[FileExtensionValidator(allowed_extensions=["hmm"])],
+        blank=True,
+    )
 
     def __str__(self):
         return self.name

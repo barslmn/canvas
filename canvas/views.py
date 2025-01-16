@@ -125,6 +125,7 @@ tsp -L {label} nextflow /home/canvas/canvas-pipeline/main.nf \\
     --egt s3://canvas/{chip_type.egt.name} \\
     --fasta s3://canvas/{chip_type.genome.fasta.name} \\
     --pfb s3://canvas/{chip_type.pfb.name} \\
+    --hmm s3://canvas/{chip_type.hmm.name} \\
     --band s3://canvas/{chip_type.genome.band.name} \\
     --tex_template /home/canvas/canvas-pipeline/template/base_template.tex \\
     --samplesheet {ss.name} \\
