@@ -25,7 +25,11 @@
         </ul>
       </nav>
     {% endif %}
-    <span class="badge pico-background-azure-200" style="font-variation-settings: 'wght' 700;">Protocol ID: {{ sample.protocol_id }}</span>
+    <span
+      class="badge pico-background-azure-200"
+      style="font-variation-settings: 'wght' 700;"
+      >Protocol ID: {{ sample.protocol_id }}</span
+    >
   </header>
   <p>
     <strong>Arrival Date:</strong>
@@ -58,14 +62,19 @@
   {% for chipsample in sample.chipsample.all %}
     <article style="border-radius:1em; padding:1em;">
       <header style="border-radius:1em; padding:1em;">
-        <span class="badge pico-background-yellow-200" style="font-variation-settings: 'wght' 600;">
+        <span
+          class="badge pico-background-yellow-200"
+          style="font-variation-settings: 'wght' 600;"
+        >
           Chip ID: {{ chipsample.chip.chip_id }}
         </span>
 
-        <span class="badge pico-background-blue-200" style="font-variation-settings: 'wght' 600;">
+        <span
+          class="badge pico-background-blue-200"
+          style="font-variation-settings: 'wght' 600;"
+        >
           Position: {{ chipsample.position }}
         </span>
-
       </header>
 
       <strong>Scan Date:</strong>
@@ -110,18 +119,21 @@
       <footer style="border-radius:1em; padding:1em;">
         <nav class="d-flex">
           <ul class="d-flex gap-3">
-            <li>
-              {% include 'canvas/components/reports.html' %}
-            </li>
+            <li>{% include 'canvas/components/reports.html' %}</li>
 
             <li>
-              <details
-                role="list"
-                class="download-menu"
-              >
-                <summary role="button" aria-haspopup="listbox" style="border-radius: 1em; padding: 0;" class="btn btn-primary outline">
+              <details role="list" class="download-menu">
+                <summary
+                  role="button"
+                  aria-haspopup="listbox"
+                  style="border-radius: 1em; padding: 0;"
+                  class="btn btn-primary outline"
+                >
                   <div style="display: flex; align-items: center; width: 100%;">
-                    <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
+                    <div
+                      class="pico-background-purple-100"
+                      style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;"
+                    >
                       <i class="fa-solid fa-download"></i>
                     </div>
                     <span style="padding: 0 1em;">Download files</span>
@@ -170,6 +182,10 @@
             </li>
 
             <li>
+              {% include 'canvas/components/notes.html' with object=chipsample content_type="chipsample" %}
+            </li>
+
+            <li>
               <div
                 hx-get="{% url 'chipsample_tab_button' %}"
                 hx-target="#tab-buttons"
@@ -204,7 +220,10 @@
                     hx-vals='{"chipsample_pk": {{ chipsample.pk }}}'
                     style="display: flex; align-items: center; width: 100%;"
                   >
-                    <div class="pico-background-purple-100" style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;">
+                    <div
+                      class="pico-background-purple-100"
+                      style="padding: .6em; border-top-left-radius: 1em; border-bottom-left-radius: 1em;"
+                    >
                       <i class="fa-solid fa-dna"></i>
                     </div>
                     <span style="padding: 0 1em;">View Variants</span>
@@ -212,11 +231,6 @@
                 </button>
               </div>
             </li>
-
-            <li>
-              {% include 'canvas/components/notes.html' with object=chipsample content_type="chipsample" %}
-            </li>
-
           </ul>
         </nav>
       </footer>
