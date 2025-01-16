@@ -140,13 +140,20 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
         {
             title: "Details",
             field: "details",
-            hozAlign: "center",
             formatter: function(cell, formatterParams) {
-                return `<a href="#"
-                           hx-post="{% url 'get_acmg' %}"
-                           hx-vals='{"cnv_pk": `+ cell.getRow().getData()["cnv_pk"] + `}'
-                           hx-target="main"
-                           hx-swap="beforeend"> <i class="fa-solid fa-circle-info"></i></a>`;
+                // Create the element
+                const link = document.createElement('a');
+                link.href = '#';
+                link.setAttribute('hx-post', "{% url 'get_acmg' %}");
+                link.setAttribute('hx-vals', JSON.stringify({cnv_pk: cell.getRow().getData()["cnv_pk"]}));
+                link.setAttribute('hx-target', 'body');
+                link.setAttribute('hx-swap', 'beforeend');
+                link.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+
+                // Initialize HTMX on the element
+                htmx.process(link);
+
+                return link;
             },
         },
         {
