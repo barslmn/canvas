@@ -63,6 +63,12 @@ var rowMenu = [
                 }
             }
         ]
+    },
+    {
+        label:"<i class='fas fa-download'></i> Download TSV",
+        action:function(e, row){
+            row.getTable().download("csv", "data.tsv", {delimiter:"\t"});
+        }
     }
 ];
 
