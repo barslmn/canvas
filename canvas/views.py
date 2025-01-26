@@ -1,4 +1,5 @@
 import json
+import re
 import secrets
 import socket
 import struct
@@ -22,9 +23,18 @@ from io import BytesIO
 import os
 from django.contrib.contenttypes.models import ContentType
 
-from django.db.models import Q, F, Func, Value, IntegerField
-from django.db.models.functions import Cast, Substr, StrIndex, Replace
-
+from django.db.models import (
+    Q,
+    F,
+    IntegerField,
+    Value,
+    Subquery,
+    OuterRef,
+    Func,
+    Value,
+    CharField,
+)
+from django.db.models.functions import Cast
 
 from canvas.models import (
     IDAT,
@@ -300,78 +310,115 @@ def sample_search(request):
     if length:
         try:
             min_length = int(length)
-            samples = samples.annotate(
-                cnv_length=Cast(
-                    Replace(
-                        Replace(
-                            Func(
-                                F("chipsample__cnv__cnv_json__length_info"),
-                                Value("length="),
-                                Value(""),
-                                function="replace",
-                            ),
-                            Value(","),
-                            Value(""),
-                        ),
-                        Value(" "),
-                        Value(""),
-                    ),
-                    output_field=IntegerField(),
+
+            matching_cnvs = (
+                CNV.objects.filter(chipsample__sample=OuterRef("pk"))
+                .annotate(
+                    # First extract length_info as a string
+                    length_info=Cast("cnv_json__length_info", output_field=CharField())
                 )
-            ).filter(cnv_length__gte=min_length)
+                .annotate(
+                    # Remove the 'length=' prefix
+                    clean_length=Func(
+                        F("length_info"),
+                        Value("length="),
+                        Value(""),
+                        function="REPLACE",
+                        output_field=CharField(),
+                    )
+                )
+                .annotate(
+                    # Remove commas
+                    no_commas=Func(
+                        F("clean_length"),
+                        Value(","),
+                        Value(""),
+                        function="REPLACE",
+                        output_field=CharField(),
+                    )
+                )
+                .annotate(
+                    # Remove quotes
+                    numeric_length=Func(
+                        F("no_commas"),
+                        Value('"'),
+                        Value(""),
+                        function="REPLACE",
+                        output_field=CharField(),
+                    )
+                )
+                .annotate(
+                    # Finally cast to integer
+                    length_value=Cast("numeric_length", output_field=IntegerField())
+                )
+                .filter(length_value__gte=min_length)
+            )
+
+            # Filter samples that have at least one matching CNV
+            samples = samples.filter(
+                chipsample__cnv__in=Subquery(matching_cnvs.values("id"))
+            ).distinct()
+
         except ValueError:
-            pass  # invalid length input ignored
+            pass
+
+    if range_input:
+        try:
+            chr_pattern = r"chr(?P<chr>\w+):(?P<start>\d+)-(?P<end>\d+)"
+            match = re.match(chr_pattern, range_input)
+
+            if match:
+                query_chr = f"chr{match.group('chr')}"
+                query_start = int(match.group("start"))
+                query_end = int(match.group("end"))
+
+                samples = (
+                    samples.filter(chipsample__cnv__cnv_json__Chromosome=query_chr)
+                    .annotate(
+                        # First get start and end as strings and trim quotes
+                        start_str=Func(
+                            Cast(
+                                "chipsample__cnv__cnv_json__Start",
+                                output_field=CharField(),
+                            ),
+                            Value('"'),
+                            Value(""),
+                            function="REPLACE",
+                            output_field=CharField(),
+                        ),
+                        end_str=Func(
+                            Cast(
+                                "chipsample__cnv__cnv_json__End",
+                                output_field=CharField(),
+                            ),
+                            Value('"'),
+                            Value(""),
+                            function="REPLACE",
+                            output_field=CharField(),
+                        ),
+                    )
+                    .annotate(
+                        # Then convert to integers
+                        cnv_start=Cast("start_str", output_field=IntegerField()),
+                        cnv_end=Cast("end_str", output_field=IntegerField()),
+                    )
+                    .filter(
+                        Q(cnv_start__lt=query_start, cnv_end__gt=query_start)
+                        | Q(cnv_start__lt=query_end, cnv_end__gt=query_end)
+                        | Q(cnv_start__gte=query_start, cnv_end__lte=query_end)
+                        | Q(cnv_start__lte=query_start, cnv_end__gte=query_end)
+                        | Q(cnv_start=query_start, cnv_end=query_end)
+                    )
+                    .distinct()
+                )
+        except (ValueError, AttributeError):
+            pass
 
     # Classification filter
     if classifications:
         samples = samples.filter(
             chipsample__cnv__cnv_json__Classification__in=classifications
         ).distinct()
-
-    # Range filter
-    if range_input:
-        try:
-            chrom, rest = range_input.split(":")
-            search_start_str, search_end_str = rest.split("-")
-            search_start = int(search_start_str)
-            search_end = int(search_end_str)
-
-            if search_start > search_end:
-                search_start, search_end = search_end, search_start
-
-            # Extract start and end positions from chr_info format: "chrX:start-end"
-            samples = samples.annotate(
-                cnv_start=Cast(
-                    Substr(
-                        F("chipsample__cnv__cnv_json__chr_info"),
-                        StrIndex(F("chipsample__cnv__cnv_json__chr_info"), Value(":"))
-                        + 1,
-                        StrIndex(F("chipsample__cnv__cnv_json__chr_info"), Value("-"))
-                        - (
-                            StrIndex(
-                                F("chipsample__cnv__cnv_json__chr_info"), Value(":")
-                            )
-                            + 1
-                        ),
-                    ),
-                    output_field=IntegerField(),
-                ),
-                cnv_end=Cast(
-                    Substr(
-                        F("chipsample__cnv__cnv_json__chr_info"),
-                        StrIndex(F("chipsample__cnv__cnv_json__chr_info"), Value("-"))
-                        + 1,
-                    ),
-                    output_field=IntegerField(),
-                ),
-            ).filter(
-                Q(cnv_start__lte=search_end)  # CNV starts before query ends
-                & Q(cnv_end__gte=search_start)  # CNV ends after query starts
-                & Q(chipsample__cnv__cnv_json__chr_info__startswith=f"{chrom}:")
-            )
-
-        except (ValueError, AttributeError, KeyError):
-            pass
 
     # Has Report filter
     if has_report:
