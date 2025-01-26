@@ -34,7 +34,8 @@ from django.db.models import (
     Value,
     CharField,
 )
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, Replace, Coalesce, Substr
+
 
 from canvas.models import (
     IDAT,
@@ -307,60 +308,45 @@ def sample_search(request):
     if chips:
         samples = samples.filter(chipsample__chip__chip_id__in=chips)
 
+    # Classification filter
+    if classifications:
+        samples = samples.filter(
+            chipsample__cnv__cnv_json__Classification__in=classifications
+        ).distinct()
+
+    if has_report or has_note:
+        # Build the OR filter using Q objects
+        filter_conditions = Q(chipsample__report__isnull=False) | Q(notes__isnull=False)
+        samples = samples.filter(filter_conditions).distinct()
+
     if length:
-        try:
-            min_length = int(length)
+        min_length = int(length)
 
-            matching_cnvs = (
-                CNV.objects.filter(chipsample__sample=OuterRef("pk"))
-                .annotate(
-                    # First extract length_info as a string
-                    length_info=Cast("cnv_json__length_info", output_field=CharField())
+        samples = (
+            samples.annotate(
+                length_str=Cast(
+                    "chipsample__cnv__cnv_json__length_info",
+                    output_field=CharField(),
                 )
-                .annotate(
-                    # Remove the 'length=' prefix
-                    clean_length=Func(
-                        F("length_info"),
-                        Value("length="),
-                        Value(""),
-                        function="REPLACE",
-                        output_field=CharField(),
-                    )
-                )
-                .annotate(
-                    # Remove commas
-                    no_commas=Func(
-                        F("clean_length"),
-                        Value(","),
-                        Value(""),
-                        function="REPLACE",
-                        output_field=CharField(),
-                    )
-                )
-                .annotate(
-                    # Remove quotes
-                    numeric_length=Func(
-                        F("no_commas"),
-                        Value('"'),
-                        Value(""),
-                        function="REPLACE",
-                        output_field=CharField(),
-                    )
-                )
-                .annotate(
-                    # Finally cast to integer
-                    length_value=Cast("numeric_length", output_field=IntegerField())
-                )
-                .filter(length_value__gte=min_length)
             )
-
-            # Filter samples that have at least one matching CNV
-            samples = samples.filter(
-                chipsample__cnv__in=Subquery(matching_cnvs.values("id"))
-            ).distinct()
-
-        except ValueError:
-            pass
+            .annotate(clean_str=Replace(Replace("length_str", Value(",")), Value('"')))
+            .annotate(
+                number_part=Substr(
+                    "clean_str",
+                    8,  # Fixed length of "length="
+                )
+            )
+            .filter(~Q(number_part=""))  # Filter out empty strings
+            .annotate(
+                clean_number=Cast(
+                    "number_part",
+                    output_field=IntegerField(),
+                )
+            )
+            .filter(clean_number__isnull=False)
+            .filter(clean_number__gte=min_length)
+            .distinct("id")
+        )
 
     if range_input:
         try:
@@ -413,20 +399,6 @@ def sample_search(request):
                 )
         except (ValueError, AttributeError):
             pass
-
-    # Classification filter
-    if classifications:
-        samples = samples.filter(
-            chipsample__cnv__cnv_json__Classification__in=classifications
-        ).distinct()
-
-    # Has Report filter
-    if has_report:
-        samples = samples.filter(chipsample__report__isnull=False).distinct()
-
-    # Has Note filter
-    if has_note:
-        samples = samples.filter(notes__isnull=False).distinct()
 
     # Rest of the view
     samples = samples.order_by("-entry_date")
