@@ -1,20 +1,185 @@
-<div>
-  <input
-    autocomplete="off"
-    id="sample-search"
-    type="search"
-    name="search"
-    placeholder="Sample Search..."
-    hx-get="{% url 'sample_search' %}"
-    hx-trigger="input changed delay:500ms, searchSamples from:document"
-    hx-target="#sample-search-results"
-    hx-swap="swap:200ms"
-    hx-vals='js:{"page": 1, "institutions": getSelectedInstitutions(), "chips": getSelectedChips()}'
-  />
+<div x-data="{ showFilters: false }">
+  <div style="position:relative">
+    <input
+      autocomplete="off"
+      id="sample-search"
+      type="search"
+      name="search"
+      placeholder="Sample Search..."
+      hx-get="{% url 'sample_search' %}"
+      hx-trigger="input changed delay:500ms, searchSamples from:document"
+      hx-target="#sample-search-results"
+      hx-swap="swap:200ms"
+      hx-vals='js:{
+          "page": 1,
+          "institutions": getSelectedInstitutions(),
+          "chips": getSelectedChips(),
+          "length": getSelectedLength(),
+          "classifications": getSelectedClassifications(),
+          "range": getRangeValue(),
+          "has_report": document.querySelector("[name=has_report]")?.checked || false,
+          "has_note": document.querySelector("[name=has_note]")?.checked || false
+      }'
+    />
+    <a
+      @click="showFilters = !showFilters"
+      style="position: absolute; right: 12px; top: 12%;"
+    >
+      <i class="fas fa-filter"></i>
+    </a>
+  </div>
 
-  <div class="grid sample-search">
+  <div
+    x-show="showFilters"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0 transform scale-95"
+    x-transition:enter-end="opacity-100 transform scale-100"
+    x-transition:leave="transition ease-in duration-100"
+    x-transition:leave-start="opacity-100 transform scale-100"
+    x-transition:leave-end="opacity-0 transform scale-95"
+    class="grid sample-search"
+  >
     {% include 'canvas/components/generic_search.html' with model_name="Institution" field_name="name" label="sample-search" isSingleSelect="false" eventName="searchSamples" %}
     {% include 'canvas/components/generic_search.html' with model_name="Chip" field_name="chip_id" label="sample-search" isSingleSelect="false" eventName="searchSamples" %}
+
+    <div class="filter-group">
+      <label class="font-bold">Minimum CNV Length:</label>
+      <label
+        ><input
+          type="radio"
+          name="length"
+          value="10000"
+          @change="$dispatch('searchSamples')"
+        />
+        ≥10kb</label
+      >
+      <label
+        ><input
+          type="radio"
+          name="length"
+          value="100000"
+          @change="$dispatch('searchSamples')"
+        />
+        ≥100kb</label
+      >
+      <label
+        ><input
+          type="radio"
+          name="length"
+          value="500000"
+          @change="$dispatch('searchSamples')"
+        />
+        ≥500kb</label
+      >
+      <label
+        ><input
+          type="radio"
+          name="length"
+          value="1000000"
+          @change="$dispatch('searchSamples')"
+        />
+        ≥1Mb</label
+      >
+      <label
+        ><input
+          type="radio"
+          name="length"
+          value="10000000"
+          @change="$dispatch('searchSamples')"
+        />
+        ≥10Mb</label
+      >
+      <label
+        ><input
+          type="radio"
+          name="length"
+          value=""
+          @change="$dispatch('searchSamples')"
+          checked
+        />
+        Any</label
+      >
+    </div>
+
+    <div class="filter-group">
+      <label class="font-bold">Classification:</label>
+      <label
+        ><input
+          type="checkbox"
+          name="classifications"
+          value="Pathogenic"
+          @change="$dispatch('searchSamples')"
+        />
+        Pathogenic</label
+      >
+      <label
+        ><input
+          type="checkbox"
+          name="classifications"
+          value="Likely pathogenic"
+          @change="$dispatch('searchSamples')"
+        />
+        Likely Pathogenic</label
+      >
+      <label
+        ><input
+          type="checkbox"
+          name="classifications"
+          value="Uncertain significance"
+          @change="$dispatch('searchSamples')"
+        />
+        Uncertain</label
+      >
+      <label
+        ><input
+          type="checkbox"
+          name="classifications"
+          value="Likely benign"
+          @change="$dispatch('searchSamples')"
+        />
+        Likely Benign</label
+      >
+      <label
+        ><input
+          type="checkbox"
+          name="classifications"
+          value="Benign"
+          @change="$dispatch('searchSamples')"
+        />
+        Benign</label
+      >
+    </div>
+
+    <div class="filter-group">
+      <label class="font-bold">Genomic Range (chr:start-end):</label>
+      <input
+        type="text"
+        name="range"
+        placeholder="e.g., chr4:85613664-85614015"
+        @input.debounce.500ms="$dispatch('searchSamples')"
+        class="w-full p-1 border rounded"
+      />
+    </div>
+
+    <div class="filter-group">
+      <label class="font-bold">Presence:</label>
+      <label
+        ><input
+          type="checkbox"
+          name="has_report"
+          @change="$dispatch('searchSamples')"
+        />
+        Has Report</label
+      >
+      <label
+        ><input
+          type="checkbox"
+          name="has_note"
+          @change="$dispatch('searchSamples')"
+        />
+        Has Note</label
+      >
+    </div>
   </div>
 
   <div

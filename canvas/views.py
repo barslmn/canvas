@@ -14,16 +14,17 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django_htmx.http import retarget
-from django.http import HttpResponse
 import csv
 from django.http import FileResponse, HttpResponseForbidden, Http404, HttpResponse
 from django.shortcuts import get_object_or_404
 import zipfile
 from io import BytesIO
 import os
-from wsgiref.util import FileWrapper
-from minio import Minio
 from django.contrib.contenttypes.models import ContentType
+
+from django.db.models import Q, F, Func, Value, IntegerField
+from django.db.models.functions import Cast, Substr, StrIndex, Replace
+
 
 from canvas.models import (
     IDAT,
@@ -276,31 +277,118 @@ def chip_search(request):
 
 @login_required
 def sample_search(request):
+    # Existing parameters
     query = request.GET.get("search", "")
     page = request.GET.get("page")
     institutions = request.GET.getlist("institutions")
     chips = request.GET.getlist("chips")
-    # hack  for searching unicode chars in protocol_ids
-    query = query.upper()
+    length = request.GET.get("length")
+    classifications = request.GET.getlist("classifications")
+    range_input = request.GET.get("range")
+    has_report = request.GET.get("has_report") == "true"
+    has_note = request.GET.get("has_note") == "true"
 
-    # Start with filtering by protocol ID
+    # Base queryset
     samples = Sample.objects.filter(protocol_id__icontains=query)
 
-    # Filter by institutions if any are selected
+    # Existing filters
     if institutions:
         samples = samples.filter(institution__name__in=institutions)
-
-    # Assuming a relationship exists, filter by chips
     if chips:
         samples = samples.filter(chipsample__chip__chip_id__in=chips)
 
-    # Order by entry date
+    if length:
+        try:
+            min_length = int(length)
+            samples = samples.annotate(
+                cnv_length=Cast(
+                    Replace(
+                        Replace(
+                            Func(
+                                F("chipsample__cnv__cnv_json__length_info"),
+                                Value("length="),
+                                Value(""),
+                                function="replace",
+                            ),
+                            Value(","),
+                            Value(""),
+                        ),
+                        Value(" "),
+                        Value(""),
+                    ),
+                    output_field=IntegerField(),
+                )
+            ).filter(cnv_length__gte=min_length)
+        except ValueError:
+            pass  # invalid length input ignored
+
+    # Classification filter
+    if classifications:
+        samples = samples.filter(
+            chipsample__cnv__cnv_json__Classification__in=classifications
+        ).distinct()
+
+    # Range filter
+    if range_input:
+        try:
+            chrom, rest = range_input.split(":")
+            search_start_str, search_end_str = rest.split("-")
+            search_start = int(search_start_str)
+            search_end = int(search_end_str)
+
+            if search_start > search_end:
+                search_start, search_end = search_end, search_start
+
+            # Extract start and end positions from chr_info format: "chrX:start-end"
+            samples = samples.annotate(
+                cnv_start=Cast(
+                    Substr(
+                        F("chipsample__cnv__cnv_json__chr_info"),
+                        StrIndex(F("chipsample__cnv__cnv_json__chr_info"), Value(":"))
+                        + 1,
+                        StrIndex(F("chipsample__cnv__cnv_json__chr_info"), Value("-"))
+                        - (
+                            StrIndex(
+                                F("chipsample__cnv__cnv_json__chr_info"), Value(":")
+                            )
+                            + 1
+                        ),
+                    ),
+                    output_field=IntegerField(),
+                ),
+                cnv_end=Cast(
+                    Substr(
+                        F("chipsample__cnv__cnv_json__chr_info"),
+                        StrIndex(F("chipsample__cnv__cnv_json__chr_info"), Value("-"))
+                        + 1,
+                    ),
+                    output_field=IntegerField(),
+                ),
+            ).filter(
+                Q(cnv_start__lte=search_end)  # CNV starts before query ends
+                & Q(cnv_end__gte=search_start)  # CNV ends after query starts
+                & Q(chipsample__cnv__cnv_json__chr_info__startswith=f"{chrom}:")
+            )
+
+        except (ValueError, AttributeError, KeyError):
+            pass
+
+    # Has Report filter
+    if has_report:
+        samples = samples.filter(chipsample__report__isnull=False).distinct()
+
+    # Has Note filter
+    if has_note:
+        samples = samples.filter(notes__isnull=False).distinct()
+
+    # Rest of the view
     samples = samples.order_by("-entry_date")
     samples = get_samples_for_user(request.user, samples)
     len_samples = len(samples)
 
     paginator = Paginator(samples, 12)
     samples = paginator.get_page(page)
+
     return render(
         request,
         "canvas/partials/sample_results.html",
@@ -1290,11 +1378,11 @@ def get_note_count(request):
     if request.method == "GET":
         object_id = request.GET.get("object_id")
         content_type_str = request.GET.get("content_type")
-        
+
         # Get the content type and object
         model = apps.get_model("canvas", content_type_str.capitalize())
         obj = model.objects.get(id=object_id)
-        
+
         return render(
             request,
             "canvas/partials/note_summary.html",
@@ -1310,11 +1398,11 @@ def get_notes(request):
     if request.method == "POST":
         object_id = request.POST.get("object_id")
         content_type_str = request.POST.get("content_type")
-        
+
         # Get the content type and object
         model = apps.get_model("canvas", content_type_str.capitalize())
         obj = model.objects.get(id=object_id)
-        
+
         return render(
             request,
             "canvas/partials/note_list.html",

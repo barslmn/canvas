@@ -118,6 +118,23 @@
         document.getElementsByClassName("selected-Chip-sample-search"),
       ).map((e) => e.innerText);
     }
+
+    function getSelectedLength() {
+      return (
+        document.querySelector('input[name="length"]:checked')?.value || ""
+      );
+    }
+
+    function getSelectedClassifications() {
+      return Array.from(
+        document.querySelectorAll('input[name="classifications"]:checked'),
+      ).map((el) => el.value);
+    }
+
+    function getRangeValue() {
+      return document.querySelector('input[name="range"]').value;
+    }
+
     function createSearchComponent(
       type,
       isSingleSelect = false,
