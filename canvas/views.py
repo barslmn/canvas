@@ -345,7 +345,7 @@ def sample_search(request):
             )
             .filter(clean_number__isnull=False)
             .filter(clean_number__gte=min_length)
-            .distinct("id")
+            .distinct()
         )
 
     if range_input:
