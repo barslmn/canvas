@@ -401,6 +401,7 @@ def sample_search(request):
             pass
 
     # Rest of the view
+    samples = samples.distinct()
     samples = samples.order_by("-entry_date")
     samples = get_samples_for_user(request.user, samples)
     len_samples = len(samples)
