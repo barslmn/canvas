@@ -181,7 +181,26 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
 
         {
             title: "ISCN", 
-            field: "iscn", 
+            field: "iscn",
+            sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+                // Extract chromosome numbers from ISCN notation
+                function getChromNumber(iscn) {
+                    // Extract the chromosome part (before p or q)
+                    let match = iscn.match(/^(\d+|X|Y)[pq]/i);
+                    if (!match) return 999; // Handle invalid format
+
+                    let chr = match[1];
+                    // Convert X and Y to numbers for sorting
+                    if (chr.toUpperCase() === 'X') return 23;
+                    if (chr.toUpperCase() === 'Y') return 24;
+                    return parseInt(chr, 10);
+                }
+
+                let chrA = getChromNumber(a);
+                let chrB = getChromNumber(b);
+
+                return chrA - chrB;
+            },
             responsive:0,
             headerFilter:"input"
         },
@@ -192,10 +211,41 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             headerFilter:"input",
             formatter: function(cell, formatterParams) {
                 let value = cell.getValue();
+                if (!value) return "";
+
+                // Count genes
+                let count = (value.match(/,/g) || []).length + 1;
+
+                // Create badge style
+                let badge = `<span style="
+                    background-color: #e2e8f0;
+                    border-radius: 9999px;
+                    padding: 2px 6px;
+                    font-size: 0.75rem;
+                    margin-right: 6px;
+                    font-weight: 500;
+                    display: inline-block;
+                    min-width: 20px;
+                    text-align: center;
+                ">${count}</span>`;
+
+                // Original truncation logic
                 if (value && value.length > 50) {
-                    return `<em style="white-space:normal;" title="${value}">${value.substring(0, 50)}...</em>`;
+                    return `${badge}<em style="white-space:normal;" title="${value}">${value.substring(0, 50)}...</em>`;
                 }
-                return `<em style="white-space:normal;">${value}</em>`;
+                return `${badge}<em style="white-space:normal;">${value}</em>`;
+            },
+            sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+                // Count genes by counting commas and adding 1
+                function countGenes(str) {
+                    if (!str) return 0;
+                    return (str.match(/,/g) || []).length + 1;
+                }
+
+                let countA = countGenes(a);
+                let countB = countGenes(b);
+
+                return countA - countB;
             },
             width: 200
         },
@@ -204,12 +254,45 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             field: "Known or predicted dosage-sensitive genes",
             responsive: 2,
             headerFilter:"input",
+
             formatter: function(cell, formatterParams) {
                 let value = cell.getValue();
+                if (!value) return "";
+
+                // Count genes
+                let count = (value.match(/,/g) || []).length + 1;
+
+                // Create badge style
+                let badge = `<span style="
+                    background-color: #e2e8f0;
+                    border-radius: 9999px;
+                    padding: 2px 6px;
+                    font-size: 0.75rem;
+                    margin-right: 6px;
+                    font-weight: 500;
+                    display: inline-block;
+                    min-width: 20px;
+                    text-align: center;
+                ">${count}</span>`;
+
+                // Original truncation logic
                 if (value && value.length > 50) {
-                    return `<em title="${value}">${value.substring(0, 50)}...</em>`;
+                    return `${badge}<em style="white-space:normal;" title="${value}">${value.substring(0, 50)}...</em>`;
                 }
-                return `<em>${value}</em>`;
+                return `${badge}<em style="white-space:normal;">${value}</em>`;
+            },
+
+            sorter: function(a, b, aRow, bRow, column, dir, sorterParams) {
+                // Count genes by counting commas and adding 1
+                function countGenes(str) {
+                    if (!str) return 0;
+                    return (str.match(/,/g) || []).length + 1;
+                }
+
+                let countA = countGenes(a);
+                let countB = countGenes(b);
+
+                return countA - countB;
             },
             width: 200
         },
@@ -219,6 +302,9 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             headerFilter: minMaxFilterEditor,
             headerFilterFunc: minMaxFilterFunction,
             headerFilterLiveFilter: false,
+            formatter: function(cell, formatterParams) {
+                return `<span style="font-family: monospace; display: block; text-align: right;">${cell.getValue()}</span>`;
+            },
             mutator: function(value, data, type, params, component) {
                 try {
                     return parseInt(value.replace(/[^0-9]/g, ''), 10);
@@ -228,11 +314,15 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             }
         },
         {
-            title: "Length (bp)", 
+            title: "Length (bp)",
             field: "length_info",
             headerFilter: minMaxFilterEditor,
             headerFilterFunc: minMaxFilterFunction,
             headerFilterLiveFilter: false,
+            sorter: "number", // Add this line to enable numeric sorting
+            formatter: function(cell, formatterParams) {
+                return `<span style="font-family: monospace; display: block; text-align: right;">${cell.getValue()}</span>`;
+            },
             mutator: function(value, data, type, params, component) {
                 try {
                     return parseInt(value.replace(/[^0-9]/g, ''), 10);
@@ -285,6 +375,10 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
                 min:0,
                 max:100
             },
+
+            formatter: function(cell, formatterParams) {
+                return `<span style="font-family: monospace; display: block; text-align: right;">${cell.getValue()}</span>`;
+            },
             mutator: function(value, data, type, params, component) {
                 try {
                     return parseFloat(value.replace(/[^0-9.-]+/g, ''));
@@ -297,6 +391,12 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             title: "Total Score", 
             field: "total_score",
             headerFilter:"number",
+
+            formatter: function(cell, formatterParams) {
+                return `<span style="font-family: monospace; display: block; text-align: right;">${cell.getValue()}</span>`;
+            },
+
+
             headerFilterFunc:"<=",
             headerFilterParams:{
                 min:0,
@@ -304,22 +404,23 @@ var table = new Tabulator("#cnv-table-{{ chipsample.pk }}", {
             }
         },
         {title: "Chromosome", field: "Chromosome", responsive:2},
-        {title: "Start", field: "Start", responsive:2},
-        {title: "End", field: "End", responsive:2},
+        {title: "Start", field: "Start",
+            formatter: function(cell, formatterParams) {
+                return `<span style="font-family: monospace; display: block; text-align: right;">${cell.getValue()}</span>`;
+            },
+         responsive:2},
+        {title: "End", field: "End",
+            formatter: function(cell, formatterParams) {
+                return `<span style="font-family: monospace; display: block; text-align: right;">${cell.getValue()}</span>`;
+            },
+         responsive:2},
         {title: "State Info", field: "state_info", responsive: 2},
         {title: "Start SNP Info", field: "startsnp_info", responsive: 2},
         {title: "End SNP Info", field: "endsnp_info", responsive: 2},
-        {title:"Comment", field:"comment", editor:"textarea", editorParams:{
-            elementAttributes:{
-                maxlength:"255", //set the maximum character length of the textarea element to 10 characters
-            },
-            verticalNavigation:"editor", //navigate cursor around text area without leaving the cell
-        }}
-        // Add more columns as needed
     ],
     initialSort:[
-        {column:"Classification", dir:"asc"},
-        {column:"length_info", dir:"asc"},
+        {column:"Classification", dir:"desc"},
+        {column:"length_info", dir:"desc"},
     ],
 });
 // Chromosome lengths map

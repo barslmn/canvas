@@ -1,0 +1,30 @@
+<a
+  href="#"
+  class="pipeline-button {{ status.value }}"
+  {% if status.value == 'not_running' %}
+    hx-post="{% url 'start_pipeline_run' %}" hx-vals='{"chip_pk":
+    "{{ chip.pk }}"}' hx-target="this"
+  {% endif %}
+  hx-get="{% url 'get_pipeline_status' %}"
+  hx-vals='{"chip_pk": "{{ chip.pk }}"}'
+  hx-trigger="load delay:144s"
+>
+  {% if status.value == 'running' %}
+    <i
+      class="fa-solid fa-play pico-color-gray-500"
+      title="Pipeline running"
+    ></i>
+  {% elif status.value == 'success' %}
+    <i
+      class="fa-solid fa-check pico-color-green-500"
+      title="Pipeline completed successfully"
+    ></i>
+  {% elif status.value == 'failed' %}
+    <i
+      class="fa-solid fa-triangle-exclamation pico-color-red-500"
+      title="Pipeline failed"
+    ></i>
+  {% else %}
+    <i class="fa-solid fa-play pico-color-green-500" title="Start pipeline"></i>
+  {% endif %}
+</a>

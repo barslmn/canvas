@@ -45,6 +45,8 @@ urlpatterns = [
     path("cnv_edit", views.cnv_edit, name="cnv_edit"),
     path("download_samples/", views.download_samples, name="download_samples"),
     path("match_chip_samples/", views.match_chip_samples, name="match_chip_samples"),
+    path("get_pipeline_status/", views.get_pipeline_status, name="get_pipeline_status"),
+    path("start_pipeline_run/", views.start_pipeline_run, name="start_pipeline_run"),
     # Chip download URLs
     path(
         "download/chip/<int:chip_id>/<str:file_type>/",

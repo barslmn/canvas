@@ -1,10 +1,14 @@
+import csv
 import json
+import os
 import re
 import secrets
 import socket
 import struct
 import subprocess
 import tempfile
+import zipfile
+
 
 from django.apps import apps
 from django.conf import settings
@@ -15,12 +19,17 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django_htmx.http import retarget
-import csv
-from django.http import FileResponse, HttpResponseForbidden, Http404, HttpResponse
+from django.http import (
+    FileResponse,
+    HttpResponseForbidden,
+    Http404,
+    HttpResponse,
+    HttpResponseNotFound,
+    HttpResponseNotAllowed,
+)
 from django.shortcuts import get_object_or_404
-import zipfile
 from io import BytesIO
-import os
+from enum import Enum
 from django.contrib.contenttypes.models import ContentType
 
 from django.db.models import (
@@ -162,6 +171,93 @@ tsp -D $(tsp -l | grep {label} | cut -d' ' -f1) \\
             f"ssh canvas@{HOST_IP} 'chmod +x {script.name} && {script.name}'",
             shell=True,
         )
+
+
+class PipelineStatus(Enum):
+    NOT_RUNNING = "not_running"
+    RUNNING = "running"
+    SUCCESS = "success"
+    FAILED = "failed"
+
+
+def check_pipeline_status(chip_id):
+    """Check pipeline status and last run result for this chip"""
+    if settings.DEBUG:
+        return PipelineStatus.NOT_RUNNING
+
+    try:
+        HOST_IP = get_default_gateway_linux()
+
+        # Get full task spooler history with exit codes
+        result = subprocess.run(
+            f"ssh canvas@{HOST_IP} 'tsp -l'", shell=True, capture_output=True, text=True
+        )
+
+        lines = result.stdout.splitlines()
+        chip_jobs = [line for line in lines if chip_id in line]
+
+        # Check for running jobs first
+        if any(chip_id in line and "[running]" in line for line in lines):
+            return PipelineStatus.RUNNING
+
+        # If no running jobs, check the last completed job
+        if chip_jobs:
+            last_job = chip_jobs[-1]  # Get the most recent job
+            try:
+                exit_code = int(last_job.split()[2])
+                return (
+                    PipelineStatus.SUCCESS if exit_code == 0 else PipelineStatus.FAILED
+                )
+            except (IndexError, ValueError):
+                return PipelineStatus.NOT_RUNNING
+
+        return PipelineStatus.NOT_RUNNING
+    except Exception as e:
+        print(f"Error checking pipeline status: {e}")
+        return PipelineStatus.NOT_RUNNING
+
+
+@login_required
+def get_pipeline_status(request):
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    chip_pk = request.GET.get("chip_pk")
+    try:
+        chip = Chip.objects.get(id=chip_pk)
+        status = check_pipeline_status(chip.chip_id)
+        return render(
+            request,
+            "canvas/partials/pipeline_button.html",
+            {"chip": chip, "status": status},
+        )
+    except Chip.DoesNotExist:
+        return HttpResponseNotFound()
+
+
+@login_required
+def start_pipeline_run(request):
+    if not request.user.is_staff:
+        return HttpResponseForbidden()
+
+    if request.method == "POST":
+        chip_pk = request.POST.get("chip_pk")
+        try:
+            chip = Chip.objects.get(id=chip_pk)
+            status = check_pipeline_status(chip.chip_id)
+
+            if status != PipelineStatus.RUNNING:
+                start_run(chip.chip_id)
+
+            return render(
+                request,
+                "canvas/partials/pipeline_button.html",
+                {"chip": chip, "status": check_pipeline_status(chip.chip_id)},
+            )
+        except Chip.DoesNotExist:
+            return HttpResponseNotFound()
+
+    return HttpResponseNotAllowed(["POST"])
 
 
 def get_samples_for_user(user, samples):
@@ -573,8 +669,6 @@ def chip_edit(request):
                         chip=chip, position=position, sample=sample
                     )
 
-        if not chipsample.call_rate:
-            start_run(chip.chip_id)
         return render(request, "canvas/partials/chip.html", {"chip": chip})
 
 
@@ -803,11 +897,13 @@ def get_reports(request):
     return render(request, "canvas/partials/report_list.html", context=context)
 
 
+@login_required
 def idat_upload(request):
     if request.method == "POST":
         files = request.FILES.getlist("files")
         uploaded_files = []
         errors = []
+        processed_chips = set()  # Track unique chip IDs
 
         chip_type_pk = request.POST.get("ChipType")
         chip_type = ChipType.objects.get(pk=int(chip_type_pk[0]))
@@ -830,12 +926,16 @@ def idat_upload(request):
                     )
                     idat_file = IDAT.objects.create(idat=file, chipsample=chipsample)
                     uploaded_files.append(idat_file)
+                    processed_chips.add(chip_id)
                 except Exception as e:
                     errors.append(f"Error uploading {file.name}: {str(e)}")
             else:
                 errors.append(f"Invalid file type: {file.name}")
 
-        # Render the uploaded files and error messages into HTML
+        # Start pipeline for each unique chip that had files uploaded
+        for chip_id in processed_chips:
+            start_run(chip_id)
+
         context = {"uploaded_files": uploaded_files, "errors": errors}
         return render(request, "canvas/partials/idat_upload_results.html", context)
 
