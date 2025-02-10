@@ -1,4 +1,4 @@
-{% load sortedchip %}
+{% load chip_tags %}
 
 <article class="chip-container">
   <header>
@@ -68,7 +68,7 @@
     {% endif %}
   </header>
   <div style=" height:76vh;overflow-y:auto; scrollbar-width: thin;">
-    {% sortedchip chip as chipsample_rows %}
+    {% sorted_chip chip as chipsample_rows %}
     {% for chipsample_row in chipsample_rows %}
       <div class="grid">
         {% for chipsample in chipsample_row %}

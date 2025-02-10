@@ -1,31 +1,33 @@
+{% load chip_tags %}
+
 {% if chips.number == 1 %}
-    <div class="vertical-text start-marker">
-        <div class="badge" :class="{'pico-background-green-400': {{ len_chips }} > 0, 'pico-background-red-500': {{ len_chips }} == 0}">
-            found {{ len_chips }} chips
-        </div>
+  <div class="vertical-text start-marker">
+    <div
+      class="badge"
+      :class="{'pico-background-green-400': {{ len_chips }} > 0, 'pico-background-red-500': {{ len_chips }} == 0}"
+    >
+      found {{ len_chips }} chips
     </div>
+  </div>
 {% endif %}
 
 {% for chip in chips %}
   <div
     {% if forloop.last and chips.has_next %}
-      hx-get="{% url 'chip_search' %}" 
-      hx-trigger="intersect once"
-      hx-swap="afterend swap:500ms" 
-      hx-target="this" 
-      hx-vals='js:{"page": "{{ chips.next_page_number }}", "search": "{{ query }}"}'
+      hx-get="{% url 'chip_search' %}" hx-trigger="intersect once"
+      hx-swap="afterend swap:500ms" hx-target="this" hx-vals='js:{"page":
+      "{{ chips.next_page_number }}", "search": "{{ query }}"}'
     {% endif %}
   >
-    {% include 'canvas/partials/chip.html' with chip=chip %}
+    {% get_chip_status chip as status %}
+    {% include 'canvas/partials/chip.html' with chip=chip status=status %}
   </div>
 {% endfor %}
 
 {% if not chips.has_next %}
-    {% if len_chips != 0 %}
-        <div class="vertical-text end-marker">
-            <div class="badge pico-background-orange-300">
-                no more chips
-            </div>
-        </div>
-    {% endif %}
+  {% if len_chips != 0 %}
+    <div class="vertical-text end-marker">
+      <div class="badge pico-background-orange-300">no more chips</div>
+    </div>
+  {% endif %}
 {% endif %}

@@ -1,9 +1,16 @@
 from django import template
+from canvas.views import check_pipeline_status
 
 register = template.Library()
 
 
-@register.simple_tag(name="sortedchip", takes_context=True)
+@register.simple_tag(name="get_chip_status")
+def get_chip_status(chip):
+    """Get pipeline status for a specific chip"""
+    return check_pipeline_status(chip.chip_id)
+
+
+@register.simple_tag(name="sorted_chip", takes_context=True)
 def sortedchip(context, chip, matches=None):
     user = context["user"]
 
