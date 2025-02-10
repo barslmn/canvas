@@ -136,6 +136,7 @@ profiles {{
                 f"""#!/bin/bash
 export TS_SOCKET="/home/canvas/ts/ts_start_run.socket"
 export NXF_WORK="/home/canvas/work"
+export NXF_CACHE_DIR="/home/canvas"
 job_dir="/home/canvas/jobs/{label}"
 mkdir -p "$job_dir"
 cd "$job_dir"
@@ -193,7 +194,7 @@ def check_pipeline_status(chip_id):
             f"ssh canvas@{HOST_IP} 'export TS_SOCKET=/home/canvas/ts/ts_start_run.socket && tsp -l'",
             shell=True,
             capture_output=True,
-            text=True
+            text=True,
         )
 
         lines = result.stdout.splitlines()
@@ -824,6 +825,7 @@ profiles {{
             script.write(
                 f"""#!/bin/bash
 export TS_SOCKET="/home/canvas/ts/ts_create_report.socket"
+export NXF_CACHE_DIR="/home/canvas"
 job_dir="/home/canvas/jobs/{label}"
 mkdir -p "$job_dir"
 cd "$job_dir"
@@ -1138,6 +1140,7 @@ profiles {{
                     script.write(
                         f"""#!/bin/bash
 export TS_SOCKET="/home/canvas/ts/ts_cnv_edit.socket"
+export NXF_CACHE_DIR="/home/canvas"
 job_dir="/home/canvas/jobs/{label}"
 mkdir -p "$job_dir"
 cd "$job_dir"
