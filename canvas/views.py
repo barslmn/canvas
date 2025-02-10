@@ -190,7 +190,10 @@ def check_pipeline_status(chip_id):
 
         # Get full task spooler history with exit codes
         result = subprocess.run(
-            f"ssh canvas@{HOST_IP} 'tsp -l'", shell=True, capture_output=True, text=True
+            f"ssh canvas@{HOST_IP} 'export TS_SOCKET=/home/canvas/ts/ts_start_run.socket && tsp -l'",
+            shell=True,
+            capture_output=True,
+            text=True
         )
 
         lines = result.stdout.splitlines()
