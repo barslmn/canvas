@@ -3,11 +3,13 @@
   class="pipeline-button {{ status.value }}"
   {% if status.value == 'not_running' %}
     hx-post="{% url 'start_pipeline_run' %}" hx-vals='{"chip_pk":
-    "{{ chip.pk }}"}' hx-target="this"
+    "{{ chip.pk }}"}' hx-target="this" hx-select="i, svg" hx-swap="innerHTML"
+    hx-trigger="click"
+  {% else %}
+    hx-get="{% url 'get_pipeline_status' %}" hx-vals='{"chip_pk":
+    "{{ chip.pk }}"}' hx-trigger="load delay:144s" hx-select="i, svg"
+    hx-swap="innerHTML"
   {% endif %}
-  hx-get="{% url 'get_pipeline_status' %}"
-  hx-vals='{"chip_pk": "{{ chip.pk }}"}'
-  hx-trigger="load delay:144s"
 >
   {% if status.value == 'running' %}
     <i
