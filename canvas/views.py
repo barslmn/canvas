@@ -83,9 +83,15 @@ def get_default_gateway_linux():
 
 
 def get_version():
-    with open(settings.BASE_DIR.joinpath(".git/FETCH_HEAD")) as f:
-        return f.read().splitlines()[0][:6]
-
+    try:
+        with open(settings.BASE_DIR.joinpath(".git/FETCH_HEAD")) as f:
+            return f.read().splitlines()[0][:6]
+    except FileNotFoundError:
+        try:
+            with open(settings.BASE_DIR.joinpath(".git/refs/heads/release")) as f:
+                return f.read().strip()[:6]
+        except FileNotFoundError:
+            return "no version"
 
 def start_run(chip_id):
     if not settings.DEBUG:
