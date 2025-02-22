@@ -93,6 +93,7 @@ def get_version():
         except FileNotFoundError:
             return "no version"
 
+
 def start_run(chip_id):
     if not settings.DEBUG:
         HOST_IP = get_default_gateway_linux()
@@ -104,9 +105,12 @@ def start_run(chip_id):
         with tempfile.NamedTemporaryFile(delete_on_close=False, mode="w") as ss:
             ss.write(f"sample_id\tprotocol_id\tinstitution\n")
             for cs in ChipSample.objects.filter(chip__chip_id=chip_id):
-                ss.write(
-                    f"{chip_id}_{cs.position}\t{cs.sample.protocol_id}\t{cs.sample.institution.name}\n"
-                )
+                if cs.sample:
+                    ss.write(
+                        f"{chip_id}_{cs.position}\t{cs.sample.protocol_id}\t{cs.sample.institution.name}\n"
+                    )
+                else:
+                    ss.write(f"{chip_id}_{cs.position}\t{cs.position}\tnoInstitute\n")
             ss.flush()
             subprocess.run(
                 f"scp {ss.name} canvas@{HOST_IP}:/tmp",
