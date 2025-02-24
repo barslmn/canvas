@@ -10,6 +10,11 @@ def get_chip_status(chip):
     return check_pipeline_status(chip.chip_id)
 
 
+@register.filter(name="has_group")
+def has_group(user, group_name):
+    return user.groups.filter(name=group_name).exists()
+
+
 @register.simple_tag(name="sorted_chip", takes_context=True)
 def sortedchip(context, chip, matches=None):
     user = context["user"]

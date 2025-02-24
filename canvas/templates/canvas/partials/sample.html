@@ -1,3 +1,5 @@
+{% load chip_tags %}
+
 <article
   {% if forloop.last and samples.has_next %}
     hx-get="{% url 'sample_search' %}" hx-trigger="intersect once"
@@ -8,7 +10,7 @@
   style="border-radius:1em; padding:2em;"
 >
   <header style="border-radius:1em; padding:1em;">
-    {% if user.is_staff %}
+    {% if user.is_staff or user|has_group:"sample_edit" %}
       <nav style="float:right; transform:translateY(-25%);">
         <ul>
           <li>

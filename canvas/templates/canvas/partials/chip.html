@@ -6,7 +6,7 @@
       <h4 style="display:inline">{{ chip }}</h4>
       <span class="badge pico-background-cyan-500">{{ chip.chip_type }}</span>
     </div>
-    {% if user.is_staff %}
+    {% if user.is_staff or user|has_group:"chip_edit" %}
       <nav class="icon-nav">
         <ul>
           <li>
